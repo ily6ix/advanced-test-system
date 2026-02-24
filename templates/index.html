@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Graduate Assessment Platform</title>
+    <style>
+        /* Basic Reset */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: linear-gradient(135deg, #eef2f7, #dfe7ed); }
+        a { text-decoration: none; color: inherit; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+        .btn { display: inline-block; padding: 0.75rem 1.5rem; border-radius: 4px; font-weight: 600; cursor: pointer; }
+        .btn-primary { background: #4a90e2; color: #fff; }
+        .btn-secondary { background: transparent; border: 2px solid #4a90e2; color: #4a90e2; }
+        .btn-primary:hover { background: #357ABD; }
+        .btn-secondary:hover { background: #4a90e2; color: #fff; }
+        header { padding: 2rem 0; text-align: center; }
+
+        /* Hero Section */
+        .hero { padding: 4rem 0; text-align: center; }
+        .hero h1 { font-size: 2.5rem; margin-bottom: 1rem; color: #2a3f54; }
+        .hero p { font-size: 1.125rem; margin-bottom: 2rem; max-width: 700px; margin-left: auto; margin-right: auto; color: #555; }
+        .hero .actions { margin-top: 1.5rem; }
+
+        /* Features and steps */
+        .section { padding: 4rem 0; }
+        .cards { display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center; }
+        .card { background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); flex: 1 1 250px; min-width: 220px; }
+        .card h3 { margin-bottom: 1rem; color: #2a3f54; }
+        .card p { color: #666; }
+
+        /* Footer */
+        footer { background: #2a3f54; color: #fff; padding: 2rem 0; text-align: center; }
+        footer nav a { margin: 0 1rem; color: #cfd8dc; font-size: 0.9rem; }
+        footer p { margin-top: 1rem; font-size: 0.8rem; }
+
+        /* Responsive tweaks */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .cards { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <header class="hero">
+        <div class="container">
+            <h1>Graduate Assessment Platform for Future Professionals</h1>
+            <p>Secure, fair, and efficient online testing designed specifically for graduates and final-year students applying to programs, internships, or learnerships.</p>
+            <div class="actions">
+                <a href="/login" class="btn btn-primary">Start Assessment</a>
+                <a href="#how" class="btn btn-secondary">Learn More</a>
+            </div>
+        </div>
+    </header>
+
+    <section id="how" class="section">
+        <div class="container">
+            <h2 style="text-align:center; margin-bottom:2rem;">How It Works</h2>
+            <div class="cards">
+                <div class="card">
+                    <h3>Step 1: Register & Verify Identity</h3>
+                    <p>Sign up and complete a simple verification process to confirm your identity.</p>
+                </div>
+                <div class="card">
+                    <h3>Step 2: Take Online Assessment</h3>
+                    <p>Access a timed secure test with proctoring support on any device.</p>
+                </div>
+                <div class="card">
+                    <h3>Step 3: Receive Results & Feedback</h3>
+                    <p>Get instant grading, analytics, and personalized feedback.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="section" style="background:#f9fbfd;">
+        <div class="container">
+            <h2 style="text-align:center; margin-bottom:2rem;">Key Features</h2>
+            <div class="cards">
+                <div class="card">
+                    <h3>Secure Timed Assessments</h3>
+                    <p>Questions delivered within a strict time frame with session monitoring.</p>
+                </div>
+                <div class="card">
+                    <h3>Anti-cheating & Proctoring</h3>
+                    <p>AI and human-based proctoring to ensure exam integrity.</p>
+                </div>
+                <div class="card">
+                    <h3>Auto-grading & Analytics</h3>
+                    <p>Fast results with detailed performance insights for candidates and evaluators.</p>
+                </div>
+                <div class="card">
+                    <h3>Multi-device Compatibility</h3>
+                    <p>Work across desktops, tablets, and smartphones seamlessly.</p>
+                </div>
+                <div class="card">
+                    <h3>Accessibility-friendly</h3>
+                    <p>Compliant with WCAG standards to support all users.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="why" class="section">
+        <div class="container">
+            <h2 style="text-align:center; margin-bottom:2rem;">Why Choose This Platform</h2>
+            <div class="cards">
+                <div class="card">
+                    <h3>Fair & Standardized Testing</h3>
+                    <p>Every candidate sees the same conditions and assessments.</p>
+                </div>
+                <div class="card">
+                    <h3>Built for Graduates</h3>
+                    <p>Tailored to the needs of graduate program applicants.</p>
+                </div>
+                <div class="card">
+                    <h3>Scalable Architecture</h3>
+                    <p>Handles high volumes of simultaneous users with ease.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="experience" class="section" style="background:#f9fbfd;">
+        <div class="container">
+            <h2 style="text-align:center; margin-bottom:2rem;">Candidate Experience</h2>
+            <div class="cards">
+                <div class="card">
+                    <h3>Simple Dashboard</h3>
+                    <p>Clean interface that shows your assessments at a glance.</p>
+                </div>
+                <div class="card">
+                    <h3>Progress Tracking</h3>
+                    <p>Know where you stand with built-in progress indicators.</p>
+                </div>
+                <div class="card">
+                    <h3>Clear Instructions & Support</h3>
+                    <p>Step-by-step guidance and help resources always available.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" style="text-align:center;">
+        <div class="container">
+            <h2>Take the next step toward your graduate journey</h2>
+            <a href="/login" class="btn btn-primary" style="margin-top:1rem;">Begin Test Now</a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <nav>
+                <a href="/about">About</a>
+                <a href="/support">Support</a>
+                <a href="/privacy">Privacy Policy</a>
+                <a href="/terms">Terms</a>
+            </nav>
+            <p>&copy; 2026 Advanced Test System. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

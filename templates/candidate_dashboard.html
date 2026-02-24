@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Candidate Dashboard</title>
+    <style>
+        body { margin:0; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:#f4f6f8; color:#333; }
+        .topbar { background:#1a2634; color:#fff; display:flex; align-items:center; justify-content:space-between; padding:0 1rem; height:60px; }
+        .topbar .logo { font-size:1.25rem; font-weight:bold; }
+        .topbar .profile { cursor:pointer; }
+        .container { max-width:800px; margin:0 auto; padding:1.5rem; }
+        .welcome { text-align:center; margin-bottom:2rem; }
+        .cards { display:flex; flex-wrap:wrap; gap:1rem; justify-content:center; }
+        .card { background:#fff; padding:1rem 1.5rem; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.1); flex:1 1 180px; min-width:180px; }
+        .card h4 { margin-bottom:0.5rem; font-size:1rem; color:#555; }
+        .card p { font-size:1.5rem; font-weight:600; color:#1a2634; }
+        table { width:100%; border-collapse:collapse; background:#fff; margin-top:2rem; }
+        th, td { padding:0.75rem; text-align:left; border-bottom:1px solid #e0e0e0; }
+        th { background:#f9fbfd; }
+        .btn { padding:0.4rem 0.75rem; border-radius:4px; font-size:0.875rem; cursor:pointer; border:none; }
+        .btn-primary { background:#4a90e2; color:#fff; }
+        .btn-primary:hover { background:#357ABD; }
+        @media(max-width:768px){ .cards { flex-direction:column; } }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div class="logo">AssessmentSys</div>
+        <div class="profile">Candidate ▼</div>
+    </div>
+    <div class="container">
+        <div class="welcome">
+            <h1>Welcome, Candidate</h1>
+            <p>Your assessments are listed below.</p>
+        </div>
+        <div class="cards">
+            <div class="card"><h4>Completed</h4><p>2</p></div>
+            <div class="card"><h4>Pending</h4><p>1</p></div>
+            <div class="card"><h4>Next Test</h4><p>Verbal Reasoning</p></div>
+        </div>
+        <table>
+            <thead><tr><th>Assessment</th><th>Status</th><th>Due</th><th>Action</th></tr></thead>
+            <tbody>
+                <tr><td>Maths Test</td><td>Completed</td><td>—</td><td><button class="btn btn-secondary" disabled>View</button></td></tr>
+                <tr><td>Verbal Reasoning</td><td>Not Started</td><td>2026-03-01</td><td><button class="btn btn-primary">Start</button></td></tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
