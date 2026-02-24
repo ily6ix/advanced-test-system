@@ -26,12 +26,12 @@ def login():
 
 @app.route('/dashboard')
 def dashboard():
-    # Admin / client dashboard
+    # Admin dashboard
     return render_template('dashboard.html')
 
 @app.route('/candidate')
 def candidate_dashboard():
-    # Simple dashboard for candidates
+    # Client dashboard
     return render_template('candidate_dashboard.html')
 
 if __name__ == '__main__':
