@@ -26,13 +26,65 @@ def login():
 
 @app.route('/dashboard')
 def dashboard():
-    # Admin dashboard
-    return render_template('dashboard.html')
+    # Admin overview page (previously dashboard)
+    return redirect(url_for('admin_overview'))
+
+# admin area pages
+@app.route('/admin')
+def admin_overview():
+    return render_template('admin_overview.html', active='overview')
+
+@app.route('/admin/candidates')
+def admin_candidates():
+    return render_template('admin_candidates.html', active='candidates')
+
+@app.route('/admin/assessments')
+def admin_assessments():
+    return render_template('admin_assessments.html', active='assessments')
+
+@app.route('/admin/results')
+def admin_results():
+    return render_template('admin_results.html', active='results')
+
+@app.route('/admin/reports')
+def admin_reports():
+    return render_template('admin_reports.html', active='reports')
+
+@app.route('/admin/security')
+def admin_security():
+    return render_template('admin_security.html', active='security')
+
+@app.route('/admin/settings')
+def admin_settings():
+    return render_template('admin_settings.html', active='settings')
 
 @app.route('/candidate')
 def candidate_dashboard():
-    # Client dashboard
-    return render_template('candidate_dashboard.html')
+    # Candidate dashboard
+    return render_template('candidate_dashboard.html', active='dashboard')
+
+# candidate area sub-pages
+@app.route('/candidate/assessments')
+def candidate_assessments():
+    return render_template('candidate_assessments.html', active='assessments')
+
+@app.route('/candidate/results')
+def candidate_results():
+    return render_template('candidate_results.html', active='results')
+
+@app.route('/candidate/notifications')
+def candidate_notifications():
+    return render_template('candidate_notifications.html', active='notifications')
+
+@app.route('/candidate/profile')
+def candidate_profile():
+    return render_template('candidate_profile.html', active='profile')
+
+@app.route('/logout')
+def logout():
+    # placeholder; in a real app clear session
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run(debug=True)

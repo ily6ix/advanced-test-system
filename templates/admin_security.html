@@ -1,0 +1,38 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+<main class="main">
+
+<!-- ================= SECURITY ================= -->
+<section id="security" class="section">
+    <h2>Security & Audit Logs</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Admin</th>
+                <th>Action</th>
+                <th>Target</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>2026-02-20 14:23</td>
+                <td>Admin</td>
+                <td>Published Assessment</td>
+                <td>Maths Test</td>
+            </tr>
+            <tr>
+                <td>2026-02-20 15:02</td>
+                <td>Admin</td>
+                <td>Suspended User</td>
+                <td>John Smith</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+</main>
+{% endblock %}

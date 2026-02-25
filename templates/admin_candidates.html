@@ -1,0 +1,57 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+<main class="main">
+
+<!-- ================= CANDIDATES ================= -->
+<section id="candidates" class="section">
+    <h2>Candidate Management</h2>
+
+    <div style="display:flex; justify-content:space-between; margin-bottom:1rem;">
+        <input type="text" placeholder="Search candidates..."
+            style="padding:0.5rem 1rem; border-radius:20px; border:1px solid #e5e7eb; width:260px;">
+        <button class="btn btn-secondary">+ Add Candidate</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Role</th>
+                <th>Last Login</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>Jane Doe</td>
+                <td>jane@example.com</td>
+                <td><span style="color:green;">Active</span></td>
+                <td>Candidate</td>
+                <td>Today</td>
+                <td>
+                    <button class="btn btn-secondary">Edit</button>
+                    <button class="btn btn-secondary">Suspend</button>
+                </td>
+            </tr>
+
+            <tr>
+                <td>John Smith</td>
+                <td>john@example.com</td>
+                <td><span style="color:red;">Suspended</span></td>
+                <td>Candidate</td>
+                <td>7 days ago</td>
+                <td>
+                    <button class="btn btn-secondary">Edit</button>
+                    <button class="btn btn-secondary">Activate</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+</main>
+{% endblock %}

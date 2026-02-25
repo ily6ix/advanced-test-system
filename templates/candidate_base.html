@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Client Dashboard</title>
+<title>Candidate Area</title>
 
 <!-- Google Font -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -192,19 +192,7 @@ th {
     color: var(--white);
 }
 
-/* ================= CHART PLACEHOLDERS ================= */
-.chart {
-    height: 220px;
-    background: var(--white);
-    border-radius: var(--radius);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-muted);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
-}
-
-/* ================= RESPONSIVE ================= */
+/* === responsive === */
 @media (max-width: 900px) {
     .sidebar {
         width: 200px;
@@ -234,102 +222,23 @@ th {
     <div class="logo">AssessmentSys</div>
     <div class="actions">
         <i class="fas fa-bell"></i>
-        <span>Admin Dashboard ▾</span>
+        <span>{{ active|capitalize }} ▾</span>
     </div>
 </div>
 
 <!-- SIDEBAR -->
 <nav class="sidebar">
-    <a href="#overview"><i class="fas fa-chart-line"></i> Overview</a>
-    <a href="#candidates"><i class="fas fa-users"></i> Candidates</a>
-    <a href="#assessments"><i class="fas fa-clipboard-list"></i> Assessments</a>
-    <a href="#results"><i class="fas fa-chart-pie"></i> Results</a>
-    <a href="#reports"><i class="fas fa-file-export"></i> Reports</a>
-    <a href="#security"><i class="fas fa-shield-alt"></i> Security</a>
-    <a href="#settings"><i class="fas fa-cog"></i> Settings</a>
+    <a href="{{ url_for('candidate_dashboard') }}" class="{% if active == 'dashboard' %}active{% endif %}"><i class="fas fa-home"></i> Dashboard</a>
+    <a href="{{ url_for('candidate_assessments') }}" class="{% if active == 'assessments' %}active{% endif %}"><i class="fas fa-clipboard-list"></i> Assessments</a>
+    <a href="{{ url_for('candidate_results') }}" class="{% if active == 'results' %}active{% endif %}"><i class="fas fa-chart-bar"></i> Results</a>
+    <a href="{{ url_for('candidate_notifications') }}" class="{% if active == 'notifications' %}active{% endif %}"><i class="fas fa-bell"></i> Notifications</a>
+    <a href="{{ url_for('candidate_profile') }}" class="{% if active == 'profile' %}active{% endif %}"><i class="fas fa-user"></i> Profile</a>
+    <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
 </nav>
 
-<!-- MAIN -->
 <main class="main">
-
-<section id="overview" class="section">
-    <h2>Overview</h2>
-    <div class="kpi-cards">
-        <div class="card"><h4>Total Candidates</h4><p>1,234</p></div>
-        <div class="card"><h4>Active Assessments</h4><p>12</p></div>
-        <div class="card"><h4>Completed Tests</h4><p>458</p></div>
-        <div class="card"><h4>Pass / Fail Rate</h4><p>78% / 22%</p></div>
-    </div>
-
-    <div style="margin-top:2rem;">
-        <h3>Assessment Trends</h3>
-        <div class="chart">[Chart Placeholder]</div>
-    </div>
-</section>
-
-<section id="candidates" class="section">
-    <h2>Candidate Management</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th><th>Email</th><th>Assessment</th>
-                <th>Status</th><th>Score</th><th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Jane Doe</td><td>jane@example.com</td>
-                <td>Maths Test</td><td>Completed</td><td>85%</td>
-                <td><button class="btn btn-secondary">View</button></td>
-            </tr>
-            <tr>
-                <td>John Smith</td><td>john@example.com</td>
-                <td>Verbal</td><td>In Progress</td><td>—</td>
-                <td><button class="btn btn-secondary">View</button></td>
-            </tr>
-        </tbody>
-    </table>
-</section>
-
-<section id="assessments" class="section">
-    <h2>Assessment Management</h2>
-    <p>[Create / edit / publish assessments]</p>
-</section>
-
-<section id="results" class="section">
-    <h2>Results & Analytics</h2>
-    <div class="chart">[Score Distribution]</div>
-</section>
-
-<section id="reports" class="section">
-    <h2>Reports</h2>
-    <p>[Download PDF / CSV]</p>
-</section>
-
-<section id="security" class="section">
-    <h2>Security & Compliance</h2>
-    <p>[Logs, anti-cheating, compliance]</p>
-</section>
-
-<section id="settings" class="section">
-    <h2>Settings</h2>
-    <p>[Branding, roles, preferences]</p>
-</section>
-
+    {% block content %}{% endblock %}
 </main>
-
-<!-- Scroll Animation -->
-<script>
-const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add("show");
-        }
-    });
-}, { threshold: 0.15 });
-
-document.querySelectorAll(".section").forEach(sec => observer.observe(sec));
-</script>
 
 </body>
 </html>
