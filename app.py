@@ -32,7 +32,61 @@ def dashboard():
 # admin area pages
 @app.route('/admin')
 def admin_overview():
-    return render_template('admin_overview.html', active='overview')
+    # sample data that would normally be pulled from a database
+    stats = {
+        'total_candidates': 42,
+        'active_assessments': 7,
+        'completed_attempts': 123,
+        'average_score': 85,
+    }
+
+    # example user list with attributes used in the template
+    from datetime import datetime
+
+    users = [
+        {
+            'id': 1,
+            'get_full_name': 'Alice Johnson',
+            'email': 'alice@example.com',
+            'is_active': True,
+            'role': 'Administrator',
+            'last_login': datetime(2025, 2, 10),
+        },
+        {
+            'id': 2,
+            'get_full_name': 'Bob Lee',
+            'email': 'bob@example.com',
+            'is_active': False,
+            'role': 'Manager',
+            'last_login': datetime(2025, 1, 22),
+        },
+    ]
+
+    # example assessments list
+    assessments = [
+        {
+            'id': 1,
+            'title': 'Intro to Python',
+            'is_published': True,
+            'duration': 60,
+            'attempt_count': 34,
+        },
+        {
+            'id': 2,
+            'title': 'Advanced SQL',
+            'is_published': False,
+            'duration': 45,
+            'attempt_count': 12,
+        },
+    ]
+
+    return render_template(
+        'admin_overview.html',
+        active='overview',
+        users=users,
+        assessments=assessments,
+        **stats,
+    )
 
 @app.route('/admin/candidates')
 def admin_candidates():
@@ -57,6 +111,28 @@ def admin_security():
 @app.route('/admin/settings')
 def admin_settings():
     return render_template('admin_settings.html', active='settings')
+
+# placeholders for user/assessment management links on overview
+@app.route('/admin/users/add')
+def add_user():
+    # in a real app you'd show a form
+    flash('Add user page not implemented yet.', 'info')
+    return redirect(url_for('admin_overview'))
+
+@app.route('/admin/users/<int:user_id>/edit')
+def edit_user(user_id):
+    flash(f'Edit user {user_id} page not implemented yet.', 'info')
+    return redirect(url_for('admin_overview'))
+
+@app.route('/admin/assessments/create')
+def create_assessment():
+    flash('Create assessment page not implemented yet.', 'info')
+    return redirect(url_for('admin_overview'))
+
+@app.route('/admin/assessments/<int:assessment_id>/edit')
+def edit_assessment(assessment_id):
+    flash(f'Edit assessment {assessment_id} page not implemented yet.', 'info')
+    return redirect(url_for('admin_overview'))
 
 @app.route('/candidate')
 def candidate_dashboard():

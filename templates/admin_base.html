@@ -45,6 +45,8 @@ body {
     justify-content: space-between;
     padding: 0 1.5rem;
     position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
     z-index: 100;
 }
@@ -235,11 +237,11 @@ th {
     <a href="{{ url_for('admin_reports') }}" class="{% if active == 'reports' %}active{% endif %}"><i class="fas fa-file-export"></i> Reports</a>
     <a href="{{ url_for('admin_security') }}" class="{% if active == 'security' %}active{% endif %}"><i class="fas fa-shield-alt"></i> Security</a>
     <a href="{{ url_for('admin_settings') }}" class="{% if active == 'settings' %}active{% endif %}"><i class="fas fa-cog"></i> Settings</a>
+    <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
 </nav>
 
 <main class="main">
     {% block content %}{% endblock %}
-</main>
 
 <!-- Scroll Animation -->
 <script>
