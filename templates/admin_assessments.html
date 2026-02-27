@@ -7,7 +7,7 @@
     <h2>Assessment Management</h2>
 
     <div style="margin-bottom:1rem;">
-        <button class="btn btn-secondary">+ Create Assessment</button>
+        <a href="{{ url_for('create_assessment') }}" class="btn btn-secondary">+ Create Assessment</a>
     </div>
 
     <table>
@@ -23,28 +23,30 @@
         </thead>
 
         <tbody>
+            {% for a in assessments %}
             <tr>
-                <td>Maths Test</td>
-                <td><span style="color:var(--accent);">Published</span></td>
-                <td>60 mins</td>
-                <td>1</td>
-                <td>230 users</td>
+                <td>{{ a.title }}</td>
                 <td>
-                    <button class="btn btn-secondary">Edit</button>
-                    <button class="btn btn-secondary">Archive</button>
+                    {% if a.is_published %}
+                        <span style="color:var(--accent);">Published</span>
+                    {% else %}
+                        <span style="color:orange;">Draft</span>
+                    {% endif %}
+                </td>
+                <td>{{ a.duration }} mins</td>
+                <td>{{ a.attempt_count or 0 }}</td>
+                <td>
+                    {% if a.assigned and a.assigned > 0 %}
+                        {{ a.assigned }} users
+                    {% else %}
+                        Not Assigned
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('edit_assessment', assessment_id=a.id) }}" class="btn btn-secondary">Edit</a>
                 </td>
             </tr>
-
-            <tr>
-                <td>Logical Thinking</td>
-                <td><span style="color:orange;">Draft</span></td>
-                <td>45 mins</td>
-                <td>2</td>
-                <td>Not Assigned</td>
-                <td>
-                    <button class="btn btn-secondary">Publish</button>
-                </td>
-            </tr>
+            {% endfor %}
         </tbody>
     </table>
 </section>

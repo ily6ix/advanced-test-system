@@ -42,7 +42,13 @@
                     {% endif %}
                 </td>
                 <td>{{ user.role }}</td>
-                <td>{{ user.last_login.strftime("%b %d, %Y") }}</td>
+                <td>
+                {% if user.last_login %}
+                    {{ user.last_login.strftime("%b %d, %Y") }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
                 <td>
                     <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn btn-secondary">Edit</a>
                 </td>

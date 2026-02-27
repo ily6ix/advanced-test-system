@@ -1,0 +1,39 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+<section class="section">
+    <h2>{{ 'Create' if action == 'create' else 'Edit' }} Assessment</h2>
+
+    <form method="post">
+        <label>Title:<br>
+            <input type="text" name="title" value="{{ assessment.title or '' }}" required>
+        </label><br><br>
+
+        <label>Description:<br>
+            <textarea name="description" rows="4" cols="50">{{ assessment.description or '' }}</textarea>
+        </label><br><br>
+
+        <label>Duration (minutes):<br>
+            <input type="number" name="duration" min="0" value="{{ assessment.duration or '' }}" required>
+        </label><br><br>
+
+        <label>Passing Score (%):<br>
+            <input type="number" name="passing_score" min="0" max="100" value="{{ assessment.passing_score or '' }}">
+        </label><br><br>
+
+        <label>Number of Questions:<br>
+            <input type="number" name="question_count" min="0" value="{{ assessment.question_count or '' }}">
+        </label><br><br>
+
+        <label>
+            <input type="checkbox" name="is_published" {% if assessment.is_published %}checked{% endif %}>
+            Published
+        </label><br><br>
+
+        <button class="btn btn-secondary" type="submit">
+            {{ 'Create Assessment' if action == 'create' else 'Save Changes' }}
+        </button>
+        <a href="{{ url_for('admin_assessments') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</section>
+{% endblock %}
