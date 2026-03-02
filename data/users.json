@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "get_full_name": "Alice Johnson",
+    "email": "alice@example.com",
+    "password": "alice_pass",
+    "is_active": true,
+    "role": "Administrator",
+    "last_login": "2025-02-10T00:00:00"
+  },
+  {
+    "id": 2,
+    "get_full_name": "Bob Lee",
+    "email": "bob@example.com",
+    "password": "bob_pass",
+    "is_active": false,
+    "role": "Manager",
+    "last_login": "2025-01-22T00:00:00"
+  },
+  {
+    "id": 3,
+    "get_full_name": "james",
+    "email": "james@gmail.com",
+    "password": "james_pass",
+    "is_active": false,
+    "role": "Administrator",
+    "last_login": null
+  },
+  {
+    "id": 4,
+    "get_full_name": "goitseone",
+    "email": "goitseonetrade@gmail.com",
+    "password": "goitseone_pass",
+    "is_active": true,
+    "role": "Candidate",
+    "last_login": null
+  }
+]

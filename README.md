@@ -20,6 +20,8 @@ A lightweight Flask-based assessment system prototype. The repository includes b
    python app.py
    ```
 
+   The application persists user and assessment data to JSON files under a `data/` directory. If the files are missing the first time the app runs they are created from the built‑in seed data.
+
 4. Open `http://localhost:5000` in your browser.
 
 *The login is stubbed – use `admin`/`1234` for admin or `candidate`/`1234` for a candidate.*

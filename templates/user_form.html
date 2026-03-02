@@ -13,6 +13,10 @@
             <input type="email" name="email" value="{{ user.email or '' }}" required>
         </label><br><br>
 
+        <label>Password:<br>
+            <input type="password" name="password" {% if action == 'add' %}required{% else %}placeholder="Leave blank to keep current password"{% endif %}>
+        </label><br><br>
+
         <label>Role:<br>
             <select name="role">
                 <option value="Administrator" {% if user.role == 'Administrator' %}selected{% endif %}>Administrator</option>

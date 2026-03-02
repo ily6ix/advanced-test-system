@@ -1,0 +1,24 @@
+[
+  {
+    "id": 1,
+    "title": "Intro to Python",
+    "description": "A basic assessment covering Python fundamentals.",
+    "duration": 60,
+    "passing_score": 70,
+    "question_count": 25,
+    "is_published": true,
+    "attempt_count": 34,
+    "assigned": 120
+  },
+  {
+    "id": 2,
+    "title": "Advanced SQL",
+    "description": "Query optimization and complex joins.",
+    "duration": 45,
+    "passing_score": 80,
+    "question_count": 20,
+    "is_published": false,
+    "attempt_count": 12,
+    "assigned": 0
+  }
+]

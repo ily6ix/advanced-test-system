@@ -1,138 +1,64 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
+import os
+import json
+from datetime import datetime
 
 app = Flask(__name__)
 # secret key for session/flash messages; in production use an environment variable
 app.secret_key = 'replace-with-secure-random'
 
-# in-memory templates for initial data; session will hold the working copy
-initial_assessments = [
-    {
-        'id': 1,
-        'title': 'Intro to Python',
-        'description': 'A basic assessment covering Python fundamentals.',
-        'duration': 60,  # minutes
-        'passing_score': 70,
-        'question_count': 25,
-        'is_published': True,
-        'attempt_count': 34,
-        'assigned': 120,
-    },
-    {
-        'id': 2,
-        'title': 'Advanced SQL',
-        'description': 'Query optimization and complex joins.',
-        'duration': 45,
-        'passing_score': 80,
-        'question_count': 20,
-        'is_published': False,
-        'attempt_count': 12,
-        'assigned': 0,
-    },
-]
+# --- persistence helpers --------------------------------------------------
 
-# simple helper to allocate new ids
-initial_next_assessment_id = 3
-
-# In-memory store for users (initial seed)
-from datetime import datetime
-initial_users = [
-    {
-        'id': 1,
-        'get_full_name': 'Alice Johnson',
-        'email': 'alice@example.com',
-        'is_active': True,
-        'role': 'Administrator',
-        'last_login': datetime(2025, 2, 10),
-    },
-    {
-        'id': 2,
-        'get_full_name': 'Bob Lee',
-        'email': 'bob@example.com',
-        'is_active': False,
-        'role': 'Manager',
-        'last_login': datetime(2025, 1, 22),
-    },
-]
-initial_next_user_id = 3
-
-# In-memory store for users
-from datetime import datetime
-
-users = [
-    {
-        'id': 1,
-        'get_full_name': 'Alice Johnson',
-        'email': 'alice@example.com',
-        'is_active': True,
-        'role': 'Administrator',
-        'last_login': datetime(2025, 2, 10),
-    },
-    {
-        'id': 2,
-        'get_full_name': 'Bob Lee',
-        'email': 'bob@example.com',
-        'is_active': False,
-        'role': 'Manager',
-        'last_login': datetime(2025, 1, 22),
-    },
-]
-next_user_id = 3
-
-# helpers for session-backed state
-
-def ensure_session_data():
-    """Populate session with default lists if not already present."""
-    if 'assessments' not in session:
-        session['assessments'] = initial_assessments.copy()
-        session['next_assessment_id'] = initial_next_assessment_id
-    if 'users' not in session:
-        # strip datetime to isoformat for serialization
-        users_copy = []
-        for u in initial_users:
-            uc = u.copy()
-            if isinstance(uc.get('last_login'), datetime):
-                uc['last_login'] = uc['last_login'].isoformat()
-            users_copy.append(uc)
-        session['users'] = users_copy
-        session['next_user_id'] = initial_next_user_id
+DATA_DIR = 'data'
 
 
-def get_session_assessments():
-    ensure_session_data()
-    return session['assessments']
+def ensure_data_dir():
+    if not os.path.isdir(DATA_DIR):
+        os.makedirs(DATA_DIR)
 
 
-def save_session_assessments(list_obj):
-    session['assessments'] = list_obj
-    # update id counter if modified
-    session['next_assessment_id'] = session.get('next_assessment_id', initial_next_assessment_id)
+def _convert_datetimes(obj):
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    if isinstance(obj, dict):
+        return {k: _convert_datetimes(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_convert_datetimes(v) for v in obj]
+    return obj
 
 
-def get_session_users():
-    ensure_session_data()
-    # convert isoformat back to datetime for last_login if needed
-    us = []
-    for u in session['users']:
-        uc = u.copy()
-        if uc.get('last_login'):
-            try:
-                uc['last_login'] = datetime.fromisoformat(uc['last_login'])
-            except Exception:
-                pass
-        us.append(uc)
-    return us
+def save_to_file(filename, data):
+    ensure_data_dir()
+    path = os.path.join(DATA_DIR, filename)
+    with open(path, 'w') as f:
+        json.dump(_convert_datetimes(data), f, indent=2)
 
 
-def save_session_users(list_obj):
-    # convert datetimes to isoformat for storage
-    us = []
-    for u in list_obj:
-        uc = u.copy()
-        if isinstance(uc.get('last_login'), datetime):
-            uc['last_login'] = uc['last_login'].isoformat()
-        us.append(uc)
-    session['users'] = us
-    session['next_user_id'] = session.get('next_user_id', initial_next_user_id)
+def load_from_file(filename, default):
+    ensure_data_dir()
+    path = os.path.join(DATA_DIR, filename)
+    if not os.path.exists(path):
+        save_to_file(filename, default)
+        return default.copy() if isinstance(default, list) else default
+    with open(path) as f:
+        data = json.load(f)
+    # convert known iso strings back to datetime
+    if filename == 'users.json':
+        for item in data:
+            if isinstance(item.get('last_login'), str):
+                try:
+                    item['last_login'] = datetime.fromisoformat(item['last_login'])
+                except ValueError:
+                    pass
+    return data
+
+# load or seed persistent lists
+users = load_from_file('users.json', [])
+next_user_id = max((u.get('id', 0) for u in users), default=0) + 1
+
+assessments = load_from_file('assessments.json', [])
+next_assessment_id = max((a.get('id', 0) for a in assessments), default=0) + 1
+
 
 @app.route('/')
 def index():
@@ -166,9 +92,9 @@ def dashboard():
 # admin area pages
 @app.route('/admin')
 def admin_overview():
-    # calculate stats from session-backed store
-    current_users = get_session_users()
-    current_assessments = get_session_assessments()
+    # calculate stats from file-backed store
+    current_users = users
+    current_assessments = assessments
     stats = {
         'total_candidates': len([u for u in current_users if u['role'] == 'Candidate']),
         'active_assessments': len([a for a in current_assessments if a.get('is_published')]),
@@ -197,14 +123,12 @@ def admin_overview():
 
 @app.route('/admin/candidates')
 def admin_candidates():
-    current_users = get_session_users()
-    candidate_list = [u for u in current_users if u['role'] == 'Candidate']
+    candidate_list = [u for u in users if u['role'] == 'Candidate']
     return render_template('admin_candidates.html', active='candidates', users=candidate_list)
 
 @app.route('/admin/assessments')
 def admin_assessments():
-    current_assessments = get_session_assessments()
-    return render_template('admin_assessments.html', active='assessments', assessments=current_assessments)
+    return render_template('admin_assessments.html', active='assessments', assessments=assessments)
 
 @app.route('/admin/results')
 def admin_results():
@@ -229,18 +153,21 @@ def add_user():
     if request.method == 'POST':
         full_name = request.form.get('full_name', '').strip()
         email = request.form.get('email', '').strip()
+        password = request.form.get('password', '').strip()
         role = request.form.get('role', 'Candidate')
         is_active = bool(request.form.get('is_active'))
         new_user = {
             'id': next_user_id,
             'get_full_name': full_name,
             'email': email,
+            'password': password,
             'is_active': is_active,
             'role': role,
             'last_login': None,
         }
         users.append(new_user)
         next_user_id += 1
+        save_to_file('users.json', users)
         flash(f'User "{full_name}" added successfully.', 'success')
         return redirect(url_for('admin_overview'))
 
@@ -256,8 +183,12 @@ def edit_user(user_id):
     if request.method == 'POST':
         user['get_full_name'] = request.form.get('full_name', '').strip()
         user['email'] = request.form.get('email', '').strip()
+        password = request.form.get('password', '').strip()
+        if password:  # Only update password if a new one is provided
+            user['password'] = password
         user['role'] = request.form.get('role', user['role'])
         user['is_active'] = bool(request.form.get('is_active'))
+        save_to_file('users.json', users)
         flash(f'User "{user["get_full_name"]}" updated successfully.', 'success')
         return redirect(url_for('admin_overview'))
 
@@ -265,10 +196,8 @@ def edit_user(user_id):
 
 @app.route('/admin/assessments/create', methods=['GET', 'POST'])
 def create_assessment():
+    global next_assessment_id
     if request.method == 'POST':
-        current_assessments = get_session_assessments()
-        next_id = session.get('next_assessment_id', initial_next_assessment_id)
-        # gather form data
         title = request.form.get('title', '').strip()
         description = request.form.get('description', '').strip()
         duration = int(request.form.get('duration', '0') or 0)
@@ -277,7 +206,7 @@ def create_assessment():
         is_published = bool(request.form.get('is_published'))
 
         new_assessment = {
-            'id': next_id,
+            'id': next_assessment_id,
             'title': title,
             'description': description,
             'duration': duration,
@@ -287,9 +216,9 @@ def create_assessment():
             'attempt_count': 0,
             'assigned': 0,
         }
-        current_assessments.append(new_assessment)
-        session['next_assessment_id'] = next_id + 1
-        save_session_assessments(current_assessments)
+        assessments.append(new_assessment)
+        next_assessment_id += 1
+        save_to_file('assessments.json', assessments)
 
         flash(f'Assessment "{title}" created successfully.', 'success')
         return redirect(url_for('admin_assessments'))
@@ -298,8 +227,7 @@ def create_assessment():
 
 @app.route('/admin/assessments/<int:assessment_id>/edit', methods=['GET', 'POST'])
 def edit_assessment(assessment_id):
-    current_assessments = get_session_assessments()
-    assessment = next((a for a in current_assessments if a['id'] == assessment_id), None)
+    assessment = next((a for a in assessments if a['id'] == assessment_id), None)
     if not assessment:
         flash('Assessment not found.', 'danger')
         return redirect(url_for('admin_assessments'))
@@ -311,7 +239,7 @@ def edit_assessment(assessment_id):
         assessment['passing_score'] = int(request.form.get('passing_score', assessment.get('passing_score', 0)) or 0)
         assessment['question_count'] = int(request.form.get('question_count', assessment.get('question_count', 0)) or 0)
         assessment['is_published'] = bool(request.form.get('is_published'))
-        save_session_assessments(current_assessments)
+        save_to_file('assessments.json', assessments)
 
         flash(f'Assessment "{assessment["title"]}" updated successfully.', 'success')
         return redirect(url_for('admin_assessments'))
@@ -346,6 +274,7 @@ def delete_user(user_id):
     user = next((u for u in users if u['id'] == user_id), None)
     if user:
         users.remove(user)
+        save_to_file('users.json', users)
         flash(f'User "{user.get("get_full_name")}" removed.', 'warning')
     else:
         flash('User not found.', 'danger')
