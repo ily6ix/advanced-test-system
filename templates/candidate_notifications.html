@@ -4,7 +4,21 @@
     <h2>Notifications</h2>
     <p>Recent updates related to your account.</p>
 
-    <ul>
-        <li>No new notifications.</li>
-    </ul>
+    {% if notifications %}
+        <ul style="list-style: none; padding: 0;">
+            {% for notification in notifications %}
+                <li style="padding: 1rem; margin-bottom: 0.5rem; border-left: 4px solid {% if notification.type == 'pending' %}#ff9800{% elif notification.type == 'in_progress' %}#2196F3{% else %}#4CAF50{% endif %}; background: #f9f9f9; border-radius: 4px;">
+                    <strong>{{ notification.message }}</strong>
+                    <br>
+                    <small style="color: #666;">
+                        {% if notification.date %}
+                            Due: {{ notification.date | replace('T', ' ') | truncate(10, True, '') }}
+                        {% endif %}
+                    </small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p style="color: #999; font-style: italic;">No new notifications.</p>
+    {% endif %}
 {% endblock %}

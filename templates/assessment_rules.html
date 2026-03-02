@@ -1,0 +1,60 @@
+{% extends "candidate_base.html" %}
+
+{% block content %}
+<section class="section" style="max-width: 900px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h1 style="margin-bottom: 0.5rem;">{{ assessment.title }}</h1>
+        <p style="color: #666; font-size: 1.1rem;">{{ assessment.description }}</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem;">
+        <div style="background: #f0f8ff; padding: 2rem; border-radius: 10px; border-left: 4px solid #1f4ed8;">
+            <h3 style="margin-top: 0;">📋 Assessment Details</h3>
+            <div style="margin: 1rem 0;">
+                <p style="margin: 0.5rem 0;"><strong>Duration:</strong> <span style="font-size: 1.2rem; color: #d32f2f;">{{ assessment.duration }} minutes</span></p>
+                <p style="margin: 0.5rem 0;"><strong>Total Questions:</strong> {{ assessment.questions|length }}</p>
+                <p style="margin: 0.5rem 0;"><strong>Question Types:</strong> Multiple Choice & Short Answer</p>
+                <p style="margin: 0.5rem 0;"><strong>Passing Score:</strong> <span style="color: #388e3c; font-weight: 600;">{{ assessment.passing_score }}%</span></p>
+            </div>
+        </div>
+
+        <div style="background: #fff3e0; padding: 2rem; border-radius: 10px; border-left: 4px solid #ff9800;">
+            <h3 style="margin-top: 0;">⚠️ Important Rules</h3>
+            <ul style="margin: 1rem 0; padding-left: 1.5rem; line-height: 1.8;">
+                <li>You will have <strong>{{ assessment.duration }} minutes</strong> to complete the assessment</li>
+                <li>Once you <strong>submit</strong>, you cannot modify your answers</li>
+                <li>Answer all questions carefully</li>
+                <li>For multiple choice, select the best answer</li>
+                <li>For short answer, provide detailed responses</li>
+                <li>Your score will be calculated after admin grading</li>
+            </ul>
+        </div>
+    </div>
+
+    <div style="background: #f5f5f5; padding: 2rem; border-radius: 10px; margin-bottom: 2rem;">
+        <h3 style="margin-top: 0;">📝 Scoring Information</h3>
+        <p style="margin: 0.5rem 0; line-height: 1.8;">
+            This assessment contains <strong>{{ assessment.questions|length }} questions</strong> worth a total of 
+            <strong>{{ assessment.questions | map(attribute='points') | sum }} points</strong>. 
+            Your final score will be calculated as a percentage of total points available. 
+            You need to score at least <strong>{{ assessment.passing_score }}%</strong> to pass this assessment.
+        </p>
+    </div>
+
+    <div style="display: flex; gap: 1rem; justify-content: center; padding-top: 1rem; border-top: 2px solid #e0e0e0;">
+        <form method="post" style="margin: 0;">
+            <input type="hidden" name="action" value="start">
+            <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.05rem; min-width: 200px;">
+                ✓ Start Assessment
+            </button>
+        </form>
+        <a href="{{ url_for('candidate_assessments') }}" class="btn btn-secondary" style="padding: 1rem 3rem; font-size: 1.05rem; min-width: 200px;">
+            ✗ Cancel & Go Back
+        </a>
+    </div>
+
+    <p style="text-align: center; color: #999; margin-top: 2rem; font-size: 0.9rem;">
+        💡 Tip: Make sure you have a stable internet connection before starting the assessment.
+    </p>
+</section>
+{% endblock %}

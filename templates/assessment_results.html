@@ -1,0 +1,150 @@
+{% extends "candidate_base.html" %}
+
+{% block content %}
+<section class="section">
+    <!-- Results Header -->
+    <div style="background: linear-gradient(135deg, #1f4ed8, #1a3a9e); color: white; padding: 2.5rem; border-radius: 15px; margin-bottom: 3rem; text-align: center;">
+        <h2 style="margin: 0 0 1rem 0;">Assessment Complete! 🎉</h2>
+        <p style="margin: 0 0 2rem 0; font-size: 1.1rem;">{{ assessment.title }}</p>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem; background: rgba(255,255,255,0.1); padding: 2rem; border-radius: 10px;">
+            <div>
+                <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">Your Score</p>
+                <p style="margin: 0.5rem 0; font-size: 3rem; font-weight: bold;">{{ result.score_percentage }}%</p>
+            </div>
+            <div>
+                <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">Points Earned</p>
+                <p style="margin: 0.5rem 0; font-size: 3rem; font-weight: bold;">{{ result.total_score }}/{{ assessment.questions | map(attribute='points') | sum }}</p>
+            </div>
+            <div>
+                <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">Status</p>
+                <p style="margin: 0.5rem 0; font-size: 2rem; font-weight: bold;">
+                    {% if result.passed %}
+                        ✓ PASSED
+                    {% else %}
+                        ✗ FAILED
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pass/Fail Info -->
+    <div style="{% if result.passed %}background: #e8f5e9; border-left: 4px solid #4caf50;{% else %}background: #ffebee; border-left: 4px solid #d32f2f;{% endif %} padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+        {% if result.passed %}
+            <h3 style="margin: 0 0 0.5rem 0; color: #2e7d32;">✓ Congratulations!</h3>
+            <p style="margin: 0; color: #1b5e20;">
+                You passed the assessment with a score of <strong>{{ result.score_percentage }}%</strong>. 
+                You needed to score at least <strong>{{ assessment.passing_score }}%</strong>. 
+                Great job!
+            </p>
+        {% else %}
+            <h3 style="margin: 0 0 0.5rem 0; color: #c62828;">⚠ Assessment Not Passed</h3>
+            <p style="margin: 0; color: #b71c1c;">
+                You scored <strong>{{ result.score_percentage }}%</strong> but needed to score at least 
+                <strong>{{ assessment.passing_score }}%</strong> to pass. 
+                You may retake the assessment if it's assigned again.
+            </p>
+        {% endif %}
+    </div>
+
+    <!-- Detailed Answer Review -->
+    <div style="background: #f9f9f9; padding: 2rem; border-radius: 10px;">
+        <h3 style="margin-top: 0;">📋 Detailed Answer Review</h3>
+
+        {% if result.answers %}
+            {% for answer in result.answers %}
+                {% set question = assessment.questions | selectattr('id', 'equalto', answer.question_id) | first %}
+                {% if question %}
+                    {% if question.type == 'multiple_choice' %}
+                        {% set is_correct = (answer.candidate_answer | int) == question.correct_answer %}
+                    {% else %}
+                        {% set is_correct = answer.allocated_points == question.points %}
+                    {% endif %}
+
+                    <div style="background: white; padding: 1.5rem; margin-bottom: 1.5rem; border-radius: 8px; border-left: 4px solid {% if is_correct %}#4caf50{% else %}#d32f2f{% endif %};">
+                        <div style="display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem;">
+                            <div style="background: {% if is_correct %}#4caf50{% else %}#d32f2f{% endif %}; color: white; min-width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.5rem;">
+                                {% if is_correct %}✓{% else %}✗{% endif %}
+                            </div>
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0 0 0.5rem 0;">Question {{ loop.index }}: {{ question.text }}</h4>
+                                <p style="margin: 0; color: #666; font-size: 0.9rem;">
+                                    <strong>Points:</strong> {{ answer.allocated_points }}/{{ question.points }} 
+                                    | 
+                                    <strong>Type:</strong> {% if question.type == 'multiple_choice' %}Multiple Choice{% else %}Short Answer{% endif %}
+                                </p>
+                            </div>
+                        </div>
+
+                        {% if question.type == 'multiple_choice' %}
+                            <div style="background: #f5f5f5; padding: 1.5rem; border-radius: 6px; margin-top: 1rem;">
+                                <p style="margin: 0 0 0.75rem 0;"><strong>Correct Answer:</strong></p>
+                                <div style="background: #e8f5e9; padding: 1rem; border-radius: 6px; border-left: 3px solid #4caf50; margin-bottom: 1rem;">
+                                    <strong style="color: #2e7d32;">✓</strong> {{ question.options[question.correct_answer] }}
+                                </div>
+
+                                <p style="margin: 0 0 0.75rem 0;"><strong>Your Answer:</strong></p>
+                                <div style="background: {% if is_correct %}#e8f5e9{% else %}#ffebee{% endif %}; padding: 1rem; border-radius: 6px; border-left: 3px solid {% if is_correct %}#4caf50{% else %}#d32f2f{% endif %};">
+                                    {% if answer.candidate_answer is not none %}
+                                        <strong style="color: {% if is_correct %}#2e7d32{% else %}#c62828{% endif %};">
+                                            {% if is_correct %}✓{% else %}✗{% endif %}
+                                        </strong> {{ question.options[answer.candidate_answer | int] }}
+                                    {% else %}
+                                        <em style="color: #999;">No answer provided</em>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% else %}
+                            <div style="background: #f5f5f5; padding: 1.5rem; border-radius: 6px; margin-top: 1rem;">
+                                <p style="margin: 0 0 0.75rem 0;"><strong>📝 Your Answer:</strong></p>
+                                <div style="background: white; padding: 1rem; border-radius: 6px; border: 1px solid #ddd; min-height: 80px;">
+                                    {{ answer.candidate_answer or '<em style="color: #999;">No answer provided</em>' }}
+                                </div>
+                                
+                                <p style="margin: 1.5rem 0 0.75rem 0;"><strong>👨‍🏫 Admin Feedback:</strong></p>
+                                <div style="background: #fff3e0; padding: 1rem; border-radius: 6px; border-left: 3px solid #ff9800;">
+                                    <p style="margin: 0; line-height: 1.6;">
+                                        {% if answer.allocated_points == question.points %}
+                                            Excellent answer! Full points awarded.
+                                        {% elif answer.allocated_points == 0 %}
+                                            The answer provided does not meet the requirements. No points awarded. Please review the question and try again if this assessment is offered again.
+                                        {% else %}
+                                            Good attempt, but could be more complete. Partial credit awarded.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <p style="color: #999; font-style: italic; text-align: center; padding: 2rem;">
+                No answers were submitted for this assessment.
+            </p>
+        {% endif %}
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid #e0e0e0; display: flex; gap: 1rem; justify-content: center;">
+        <a href="{{ url_for('candidate_assessments') }}" class="btn btn-primary" style="padding: 1rem 2rem;">
+            ← Back to Assessments
+        </a>
+        <a href="{{ url_for('candidate_dashboard') }}" class="btn btn-secondary" style="padding: 1rem 2rem;">
+            Dashboard
+        </a>
+    </div>
+</section>
+
+<style>
+    .question_item {
+        animation: fadeIn 0.3s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+</style>
+{% endblock %}

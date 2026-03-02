@@ -4,13 +4,47 @@
     <h2>Results</h2>
     <p>Review your past assessment results and statistics.</p>
 
-    <!-- Placeholder results table -->
+    <!-- Results table -->
     <table>
         <thead>
-            <tr><th>Assessment</th><th>Score</th><th>Date</th></tr>
+            <tr>
+                <th>Assessment</th>
+                <th>Score</th>
+                <th>Status</th>
+                <th>Passing Score</th>
+                <th>Date Completed</th>
+            </tr>
         </thead>
         <tbody>
-            <tr><td>Maths Test</td><td>85%</td><td>2026-02-20</td></tr>
+            {% if completed_assessments %}
+                {% for ca in completed_assessments %}
+                    <tr>
+                        <td><strong>{{ ca.assessment.title }}</strong></td>
+                        <td>
+                            <strong>{{ ca.result.score_percentage }}%</strong>
+                        </td>
+                        <td>
+                            {% if ca.result.passed %}
+                                <span class="status completed">Passed</span>
+                            {% else %}
+                                <span class="status not-started">Failed</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ ca.assessment.passing_score }}%</td>
+                        <td>
+                            {% if ca.result.submitted_date %}
+                                {{ ca.result.submitted_date | replace('T', ' ') | truncate(19, True, '') }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="5" style="text-align: center; color: #999;">No completed assessments yet.</td>
+                </tr>
+            {% endif %}
         </tbody>
     </table>
 {% endblock %}

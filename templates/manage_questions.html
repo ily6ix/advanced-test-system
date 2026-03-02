@@ -1,0 +1,101 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+<section class="section">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h2>{{ assessment.title }}</h2>
+            <p style="color: #666;">Manage questions for this assessment</p>
+        </div>
+        <a href="{{ url_for('edit_assessment', assessment_id=assessment.id) }}" class="btn btn-secondary">Back to Assessment</a>
+    </div>
+
+    <!-- Existing Questions -->
+    <div style="background: #f9f9f9; padding: 2rem; border-radius: 10px; margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1.5rem;">Questions ({{ assessment.questions|length }})</h3>
+        
+        {% if assessment.questions %}
+            <div style="background: white; border-radius: 8px; padding: 0;">
+                {% for question in assessment.questions %}
+                    <div style="padding: 1.5rem; border-bottom: 1px solid #eee; {% if loop.last %}border-bottom: none;{% endif %}">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div style="flex: 1;">
+                                <p style="margin: 0 0 0.5rem 0;"><strong>Q{{ question.id }}. {{ question.text }}</strong></p>
+                                <p style="margin: 0.5rem 0; color: #666; font-size: 0.9rem;">
+                                    Type: <strong>{{ 'Multiple Choice' if question.type == 'multiple_choice' else 'Short Answer' }}</strong> | 
+                                    Points: <strong>{{ question.points }}</strong>
+                                </p>
+                                {% if question.type == 'multiple_choice' and question.options %}
+                                    <ul style="margin: 0.5rem 0 0 1.5rem; padding: 0;">
+                                        {% for option in question.options %}
+                                            <li style="margin-bottom: 0.3rem;">{{ option }}
+                                                {% if loop.index0 == question.correct_answer %}
+                                                    <span style="color: green; font-weight: 600;"> ✓ Correct</span>
+                                                {% endif %}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </div>
+                            <form method="post" style="margin: 0; padding-left: 1rem;">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="question_id" value="{{ question.id }}">
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this question?');" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="color: #999; font-style: italic;">No questions added yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Add New Question -->
+    <div style="background: #e8f5e9; padding: 2rem; border-radius: 10px;">
+        <h3 style="margin-bottom: 1.5rem;">Add Question</h3>
+        
+        <form method="post" style="background: white; padding: 2rem; border-radius: 8px;">
+            <input type="hidden" name="action" value="add">
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Question Text:</label>
+                <textarea name="question_text" rows="3" required style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-family: inherit;"></textarea>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Question Type:</label>
+                <select name="question_type" id="question_type" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;">
+                    <option value="multiple_choice">Multiple Choice</option>
+                    <option value="short_answer">Short Answer</option>
+                </select>
+            </div>
+
+            <div id="mc_options" style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Options (one per line):</label>
+                <textarea name="options" rows="4" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; margin-bottom: 0.5rem;"></textarea>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Correct Answer (option number, 0-based):</label>
+                <input type="number" name="correct_answer" min="0" value="0" style="width: 150px; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;">
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Points:</label>
+                <input type="number" name="points" min="1" value="10" style="width: 150px; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;">
+            </div>
+
+            <button class="btn btn-primary" type="submit">Add Question</button>
+        </form>
+    </div>
+</section>
+
+<script>
+    document.getElementById('question_type').addEventListener('change', function() {
+        var mcOptions = document.getElementById('mc_options');
+        if (this.value === 'multiple_choice') {
+            mcOptions.style.display = 'block';
+        } else {
+            mcOptions.style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}

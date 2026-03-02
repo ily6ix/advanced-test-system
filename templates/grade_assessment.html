@@ -1,0 +1,90 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+<section class="section">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h2>Grade Assessment</h2>
+            <p style="color: #666; margin: 0.5rem 0;">Assessment: <strong>{{ assessment.title }}</strong></p>
+            <p style="color: #666; margin: 0;">Candidate: <strong>{{ candidate.get_full_name }} ({{ candidate.email }})</strong></p>
+        </div>
+        <a href="{{ url_for('admin_results') }}" class="btn btn-secondary">Back to Results</a>
+    </div>
+
+    <form method="post" style="background: white; padding: 2rem; border-radius: 10px; border: 1px solid #e0e0e0;">
+        <div style="background: #f0f8ff; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+            <h3 style="margin: 0;">Submission Details</h3>
+            <p style="margin: 0.5rem 0; color: #666;">
+                <strong>Submitted:</strong> {{ result.submitted_date | replace('T', ' ') | truncate(19, True, '') if result.submitted_date else 'Not submitted' }}
+            </p>
+            <p style="margin: 0;">
+                <strong>Time Spent:</strong> {{ result.time_spent }} minutes
+            </p>
+        </div>
+
+        {% if result.answers %}
+            {% for answer in result.answers %}
+                {% set question = assessment.questions | selectattr('id', 'equalto', answer.question_id) | first %}
+                {% if question %}
+                    <div style="margin-bottom: 2.5rem; padding: 1.5rem; background: #f9f9f9; border-radius: 8px; border-left: 4px solid #1f4ed8;">
+                        <h4 style="margin: 0 0 1rem 0;">Question {{ loop.index }}: {{ question.text }}</h4>
+                        
+                        <div style="margin-bottom: 1.5rem; padding: 1rem; background: white; border-radius: 6px;">
+                            <p style="margin: 0 0 0.5rem 0; color: #666;"><strong>Type:</strong> {% if question.type == 'multiple_choice' %}Multiple Choice{% else %}Short Answer{% endif %}</p>
+                            
+                            {% if question.type == 'multiple_choice' %}
+                                <p style="margin: 0 0 0.5rem 0;"><strong>Correct Answer:</strong> {{ question.options[question.correct_answer] }}</p>
+                                <p style="margin: 0;"><strong>Candidate Answer:</strong> 
+                                    {% if answer.candidate_answer is not none %}
+                                        {{ question.options[answer.candidate_answer | int] }}
+                                        {% if (answer.candidate_answer | int) == question.correct_answer %}
+                                            <span style="color: green; font-weight: 600;">✓ Correct</span>
+                                        {% else %}
+                                            <span style="color: red; font-weight: 600;">✗ Incorrect</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <em style="color: #999;">No answer provided</em>
+                                    {% endif %}
+                                </p>
+                            {% else %}
+                                <p style="margin: 0; padding: 0.75rem; background: #f5f5f5; border-radius: 4px; border-left: 3px solid #ff9800;">
+                                    <strong>Answer:</strong> {{ answer.candidate_answer or '(No answer)' }}
+                                </p>
+                            {% endif %}
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; align-items: flex-end;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Allocate Points (Max: {{ question.points }}):</label>
+                                <input type="number" 
+                                       name="points_{{ question.id }}" 
+                                       min="0" 
+                                       max="{{ question.points }}" 
+                                       value="{{ answer.allocated_points or '' }}" 
+                                       required
+                                       style="width: 120px; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                            </div>
+                            <div style="color: #666; font-size: 0.9rem;">
+                                out of <strong>{{ question.points }}</strong> points
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+            <div style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid #333; text-align: center;">
+                <p style="margin-bottom: 1rem; color: #666;">
+                    Review all answers above and allocate points, then click "Submit Grades"
+                </p>
+                <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.05rem;">
+                    Submit Grades
+                </button>
+            </div>
+        {% else %}
+            <p style="color: #999; font-style: italic; text-align: center; padding: 2rem;">
+                Candidate has not submitted any answers yet.
+            </p>
+        {% endif %}
+    </form>
+</section>
+{% endblock %}

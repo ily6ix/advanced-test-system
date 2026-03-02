@@ -6,7 +6,7 @@
     "password": "alice_pass",
     "is_active": true,
     "role": "Administrator",
-    "last_login": "2025-02-10T00:00:00"
+    "last_login": "2026-03-02T13:13:40.038664"
   },
   {
     "id": 2,
@@ -33,6 +33,6 @@
     "password": "goitseone_pass",
     "is_active": true,
     "role": "Candidate",
-    "last_login": null
+    "last_login": "2026-03-02T13:14:48.605111"
   }
 ]

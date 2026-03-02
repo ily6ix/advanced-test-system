@@ -4,11 +4,106 @@
 
 <!-- ================= RESULTS ================= -->
 <section id="results" class="section">
-    <h2>Results & Analytics</h2>
+    <h2>Assessment Results & Grading</h2>
 
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
-        <div class="chart">[Score Distribution]</div>
-        <div class="chart">[Pass vs Fail]</div>
+    <div style="margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1rem;">Pending Grading</h3>
+        <p style="color: #666; margin-bottom: 1rem;">Assessments awaiting admin grading</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Assessment</th>
+                    <th>Candidate</th>
+                    <th>Submitted</th>
+                    <th>Time Spent</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set pending = [] %}
+                {% for assessment in assessments %}
+                    {% for result in assessment.get('results', []) %}
+                        {% if result.status == 'submitted' %}
+                            {% set candidate = users | selectattr('id', 'equalto', result.candidate_id) | first %}
+                            {% set dummy = pending.append({'assessment': assessment, 'result': result, 'candidate': candidate}) %}
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+
+                {% if pending %}
+                    {% for item in pending %}
+                        <tr>
+                            <td>{{ item.assessment.title }}</td>
+                            <td>{{ item.candidate.get_full_name }} ({{ item.candidate.email }})</td>
+                            <td>{{ item.result.submitted_date | replace('T', ' ') | truncate(19, True, '') if item.result.submitted_date else '—' }}</td>
+                            <td>{{ item.result.time_spent }} min</td>
+                            <td><span class="status pending">Awaiting Grading</span></td>
+                            <td>
+                                <a href="{{ url_for('grade_assessment', assessment_id=item.assessment.id, candidate_id=item.candidate.id) }}" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Grade</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #999;">No pending grading.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <hr style="border: none; border-top: 2px solid #e0e0e0; margin: 2rem 0;">
+
+    <div>
+        <h3 style="margin-bottom: 1rem;">Completed Results</h3>
+        <p style="color: #666; margin-bottom: 1rem;">Graded assessments</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Assessment</th>
+                    <th>Candidate</th>
+                    <th>Score</th>
+                    <th>Status</th>
+                    <th>Graded Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set completed = [] %}
+                {% for assessment in assessments %}
+                    {% for result in assessment.get('results', []) %}
+                        {% if result.status == 'completed' %}
+                            {% set candidate = users | selectattr('id', 'equalto', result.candidate_id) | first %}
+                            {% set dummy = completed.append({'assessment': assessment, 'result': result, 'candidate': candidate}) %}
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+
+                {% if completed %}
+                    {% for item in completed %}
+                        <tr>
+                            <td>{{ item.assessment.title }}</td>
+                            <td>{{ item.candidate.get_full_name }} ({{ item.candidate.email }})</td>
+                            <td><strong>{{ item.result.score_percentage }}%</strong></td>
+                            <td>
+                                {% if item.result.passed %}
+                                    <span class="status completed">Passed</span>
+                                {% else %}
+                                    <span class="status not-started">Failed</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ item.result.graded_date | replace('T', ' ') | truncate(19, True, '') if item.result.graded_date else '—' }}</td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: #999;">No completed results.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
     </div>
 </section>
 

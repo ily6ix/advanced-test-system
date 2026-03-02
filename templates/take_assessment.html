@@ -1,0 +1,187 @@
+{% extends "candidate_base.html" %}
+
+{% block content %}
+<section class="section">
+    <!-- Score Bar at Top -->
+    <div style="background: linear-gradient(135deg, #1f4ed8, #1a3a9e); color: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">Assessment Progress</p>
+            <h3 style="margin: 0.5rem 0 0 0;">{{ assessment.title }}</h3>
+        </div>
+        <div style="text-align: right;">
+            <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">Progress</p>
+            <div id="progress_display" style="font-size: 1.8rem; font-weight: bold;">0 / {{ assessment.questions|length }} answered</div>
+        </div>
+    </div>
+
+    <!-- Timer & Instructions -->
+    <div style="background: #fff3e0; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <strong>⏱️ Timer:</strong> <span id="timer" style="color: #d32f2f; font-weight: bold; font-size: 1.2rem;">{{ assessment.duration }}:00</span> remaining
+        </div>
+        <div style="text-align: right;">
+            <strong>Remember:</strong> You must answer all questions before submitting. Your answers will be sent for grading.
+        </div>
+    </div>
+
+    <form method="post" id="assessment_form" style="background: white; padding: 2rem; border-radius: 10px; border: 1px solid #e0e0e0;">
+        <input type="hidden" name="time_spent" id="time_spent" value="0">
+
+        {% if assessment.questions %}
+            {% for question in assessment.questions %}
+                <div class="question_item" style="margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid #e0e0e0; {% if loop.last %}border-bottom: none;{% endif %}">
+                    <div style="display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem;">
+                        <div style="background: #1f4ed8; color: white; min-width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem;">
+                            {{ loop.index }}
+                        </div>
+                        <div style="flex: 1;">
+                            <h4 style="margin: 0; font-size: 1.1rem;">{{ question.text }}</h4>
+                            <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">
+                                <strong>{{ question.points }} points</strong> | 
+                                {% if question.type == 'multiple_choice' %}Multiple Choice{% else %}Short Answer{% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    {% if question.type == 'multiple_choice' %}
+                        <div style="margin-left: 66px; background: #f9f9f9; padding: 1.5rem; border-radius: 8px;">
+                            {% for option in question.options %}
+                                <label style="display: flex; align-items: center; padding: 1rem; margin-bottom: 0.75rem; background: white; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; user-select: none;" class="option_label" data-question="{{ question.id }}">
+                                    <input type="radio" 
+                                           name="question_{{ question.id }}" 
+                                           value="{{ loop.index0 }}" 
+                                           style="margin-right: 1rem; width: 20px; height: 20px; cursor: pointer;"
+                                           class="question_input"
+                                           data-question-id="{{ question.id }}">
+                                    <span>{{ option }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div style="margin-left: 66px;">
+                            <textarea name="question_{{ question.id }}" 
+                                      rows="5" 
+                                      class="question_input" 
+                                      data-question-id="{{ question.id }}"
+                                      style="width: 100%; padding: 1rem; border: 2px solid #ddd; border-radius: 8px; font-family: inherit; resize: vertical;"></textarea>
+                            <p style="margin: 0.5rem 0 0 0; color: #999; font-size: 0.85rem;">
+                                Write a detailed response (use complete sentences)
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <div style="background: #e8f5e9; padding: 2rem; border-radius: 10px; margin-top: 2rem; border: 2px solid #4caf50;">
+                <h4 style="margin-top: 0; color: #2e7d32;">✓ Ready to Submit?</h4>
+                <p style="margin: 0.5rem 0; color: #333;">
+                    Make sure you have answered all <strong>{{ assessment.questions|length }}</strong> questions. 
+                    After submission, you cannot modify your answers.
+                </p>
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.05rem;" onclick="return confirm('Are you sure? You will not be able to modify answers after submission.')">
+                        Submit Assessment
+                    </button>
+                </div>
+            </div>
+        {% else %}
+            <p style="color: #999; font-style: italic; text-align: center; padding: 2rem;">
+                This assessment has no questions yet. Please contact your administrator.
+            </p>
+        {% endif %}
+    </form>
+</section>
+
+<script>
+    // Track time spent on assessment
+    let startTime = Date.now();
+    let timerInterval;
+    let totalMinutes = {{ assessment.duration }};
+    let totalSeconds = totalMinutes * 60;
+    
+    // Timer countdown
+    function updateTimer() {
+        let timeSpent = Math.floor((Date.now() - startTime) / 1000);
+        let timeRemaining = totalSeconds - timeSpent;
+        
+        if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            alert('Time is up! Your assessment will be automatically submitted.');
+            document.getElementById('assessment_form').submit();
+        }
+        
+        let minutes = Math.floor(timeRemaining / 60);
+        let seconds = timeRemaining % 60;
+        document.getElementById('timer').textContent = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+        
+        // Red warning when less than 5 minutes
+        if (timeRemaining < 300) {
+            document.getElementById('timer').style.color = '#d32f2f';
+        }
+        
+        document.getElementById('time_spent').value = timeSpent;
+    }
+    
+    timerInterval = setInterval(updateTimer, 1000);
+    updateTimer(); // Initial call
+    
+    // Track progress (questions answered)
+    function updateProgress() {
+        let answeredCount = 0;
+        document.querySelectorAll('.question_input:checked, .question_input[type="textarea"]').forEach(el => {
+            if (el.type === 'radio' && el.checked) {
+                answeredCount++;
+            } else if (el.type === 'textarea' && el.value.trim()) {
+                answeredCount++;
+            }
+        });
+        document.getElementById('progress_display').textContent = answeredCount + ' / {{ assessment.questions|length }} answered';
+    }
+    
+    // Better progress tracking
+    function trackAllAnswers() {
+        const answers = {};
+        document.querySelectorAll('input[type="radio"]:checked, textarea').forEach(el => {
+            if (el.type === 'radio' && el.checked) {
+                answers[el.name] = el.value;
+            } else if (el.type === 'textarea' && el.value.trim()) {
+                answers[el.name] = el.value;
+            }
+        });
+        
+        let answeredCount = Object.keys(answers).length;
+        document.getElementById('progress_display').textContent = answeredCount + ' / {{ assessment.questions|length }} answered';
+    }
+    
+    // Listen for changes
+    document.querySelectorAll('input[type="radio"], textarea').forEach(el => {
+        el.addEventListener('change', trackAllAnswers);
+        el.addEventListener('input', trackAllAnswers);
+    });
+    
+    // Prevent accidental page exit
+    window.addEventListener('beforeunload', function(e) {
+        if (document.querySelectorAll('input:checked, textarea').length > 0) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+</script>
+
+<style>
+    .option_label:hover {
+        background-color: #e3f2fd;
+        border-color: #1f4ed8;
+    }
+    
+    .option_label input:checked + span {
+        font-weight: 600;
+    }
+    
+    input[type="radio"]:checked + span {
+        color: #1f4ed8;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+

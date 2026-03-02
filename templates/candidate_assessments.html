@@ -4,15 +4,61 @@
     <h2>Your Assessments</h2>
     <p>List of all the assessments assigned to you.</p>
 
-    <!-- Placeholder table -->
+    <!-- Assessments table -->
     <table>
         <thead>
             <tr>
-                <th>Assessment</th><th>Status</th><th>Due</th><th>Action</th>
+                <th>Assessment</th>
+                <th>Description</th>
+                <th>Duration</th>
+                <th>Status</th>
+                <th>Due</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
-            <tr><td>Sample Test</td><td>Not Started</td><td>2026-03-10</td><td><button class="btn btn-primary">Start</button></td></tr>
+            {% if candidate_assessments %}
+                {% for ca in candidate_assessments %}
+                    <tr>
+                        <td><strong>{{ ca.assessment.title }}</strong></td>
+                        <td>{{ ca.assessment.description }}</td>
+                        <td>{{ ca.assessment.duration }} min</td>
+                        <td>
+                            {% if ca.result.status == 'completed' %}
+                                <span class="status completed">Completed ({{ ca.result.score_percentage }}%)</span>
+                            {% elif ca.result.status == 'submitted' %}
+                                <span class="status pending">Submitted (Awaiting Grade)</span>
+                            {% elif ca.result.status == 'in_progress' %}
+                                <span class="status pending">In Progress</span>
+                            {% else %}
+                                <span class="status not-started">Not Started</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if ca.result.due_date %}
+                                {{ ca.result.due_date | replace('T', ' ') | truncate(10, True, '') }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if ca.result.status == 'completed' %}
+                                <a href="{{ url_for('take_assessment', assessment_id=ca.assessment.id) }}" class="btn btn-success" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">View Results</a>
+                            {% elif ca.result.status == 'submitted' %}
+                                <button class="btn btn-secondary" disabled style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Pending</button>
+                            {% elif ca.result.status == 'in_progress' %}
+                                <a href="{{ url_for('take_assessment', assessment_id=ca.assessment.id) }}" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Resume</a>
+                            {% else %}
+                                <a href="{{ url_for('take_assessment', assessment_id=ca.assessment.id) }}" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Start</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="6" style="text-align: center; color: #999;">No assessments assigned yet.</td>
+                </tr>
+            {% endif %}
         </tbody>
     </table>
 {% endblock %}

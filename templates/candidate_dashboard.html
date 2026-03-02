@@ -2,25 +2,25 @@
 
 {% block content %}
 
-    <h2>Welcome back, Candidate</h2>
+    <h2>Welcome back, {{ candidate_name }}</h2>
     <p>Track your assessments, deadlines, and performance here.</p>
 
     <div class="cards">
         <div class="card">
             <h4>Completed</h4>
-            <p>2</p>
+            <p>{{ completed }}</p>
         </div>
         <div class="card">
             <h4>Pending</h4>
-            <p>1</p>
+            <p>{{ pending }}</p>
         </div>
         <div class="card">
             <h4>Average Score</h4>
-            <p>82%</p>
+            <p>{{ average_score }}%</p>
         </div>
         <div class="card">
             <h4>Next Deadline</h4>
-            <p>1 Mar 2026</p>
+            <p>{{ next_due }}</p>
         </div>
     </div>
 
@@ -36,39 +36,51 @@
         </thead>
 
         <tbody>
-
-            <tr>
-                <td>Maths Test</td>
-                <td><span class="status completed">Completed</span></td>
-                <td>100%</td>
-                <td>—</td>
-                <td><button class="btn btn-success">View Results</button></td>
-            </tr>
-
-            <tr>
-                <td>Verbal Reasoning</td>
-                <td><span class="status not-started">Not Started</span></td>
-                <td>
-                    <div class="progress-bar">
-                        <div class="progress" style="width:0%"></div>
-                    </div>
-                </td>
-                <td>2026-03-01</td>
-                <td><button class="btn btn-primary">Start</button></td>
-            </tr>
-
-            <tr>
-                <td>Logical Thinking</td>
-                <td><span class="status pending">In Progress</span></td>
-                <td>
-                    <div class="progress-bar">
-                        <div class="progress" style="width:60%"></div>
-                    </div>
-                </td>
-                <td>2026-03-05</td>
-                <td><button class="btn btn-primary">Resume</button></td>
-            </tr>
-
+            {% if candidate_assessments %}
+                {% for ca in candidate_assessments %}
+                    <tr>
+                        <td>{{ ca.assessment.title }}</td>
+                        <td>
+                            {% if ca.result.status == 'completed' %}
+                                <span class="status completed">Completed</span>
+                            {% elif ca.result.status == 'in_progress' %}
+                                <span class="status pending">In Progress</span>
+                            {% else %}
+                                <span class="status not-started">Not Started</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if ca.result.status == 'completed' %}
+                                100%
+                            {% else %}
+                                <div class="progress-bar">
+                                    <div class="progress" style="width:{{ ca.result.progress | default(0) }}%"></div>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if ca.result.due_date %}
+                                {{ ca.result.due_date | replace('T', ' ') | truncate(10, True, '') }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if ca.result.status == 'completed' %}
+                                <a href="{{ url_for('candidate_results') }}" class="btn btn-success">View Results</a>
+                            {% elif ca.result.status == 'in_progress' %}
+                                <button class="btn btn-primary">Resume</button>
+                            {% else %}
+                                <button class="btn btn-primary">Start</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="5" style="text-align: center; color: #999;">No assessments assigned yet.</td>
+                </tr>
+            {% endif %}
         </tbody>
     </table>
 
