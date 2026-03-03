@@ -1,0 +1,541 @@
+HTTP/1.1 200 OK
+Server: Werkzeug/3.1.6 Python/3.12.1
+Date: Tue, 03 Mar 2026 13:39:26 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 21137
+Vary: Cookie
+Connection: close
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Candidate Area</title>
+
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+<style>
+:root {
+    --navy: #0b1f3a;
+    --navy-light: #132f5c;
+    --accent: #1f4ed8;
+    --bg: #f4f7fb;
+    --white: #ffffff;
+    --text-muted: #6b7280;
+    --radius: 14px;
+}
+
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--navy);
+}
+
+/* ================= TOP BAR ================= */
+.topbar {
+    height: 64px;
+    background: var(--navy);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+}
+
+.logo {
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    font-size: 0.9rem;
+}
+
+.actions i {
+    cursor: pointer;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    width: 240px;
+    height: calc(100vh - 64px);
+    background: var(--white);
+    border-right: 1px solid #e5e7eb;
+    padding-top: 1rem;
+}
+
+.sidebar a {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.75rem 1.2rem;
+    color: var(--navy);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.sidebar a i {
+    color: var(--accent);
+}
+
+.sidebar a:hover {
+    background: #eef2ff;
+    padding-left: 1.6rem;
+}
+
+/* ================= MAIN ================= */
+.main {
+    margin-left: 240px;
+    margin-top: 64px;
+    padding: 2rem;
+}
+
+.section {
+    margin-bottom: 3rem;
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+.section.show {
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.6s ease;
+}
+
+.section h2 {
+    margin-bottom: 1.5rem;
+}
+
+/* ================= KPI CARDS ================= */
+.kpi-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.card {
+    background: var(--white);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+    transition: all 0.4s ease;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.1);
+}
+
+.card h4 {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.card p {
+    font-size: 1.6rem;
+    font-weight: 700;
+}
+
+/* ================= TABLE ================= */
+table {
+    width: 100%;
+    background: var(--white);
+    border-radius: var(--radius);
+    border-collapse: collapse;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 0.9rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+th {
+    background: #f9fafb;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* ================= BUTTONS ================= */
+.btn {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    border: none;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary {
+    background: #eef2ff;
+    color: var(--accent);
+}
+
+.btn-secondary:hover {
+    background: var(--accent);
+    color: var(--white);
+}
+
+/* === responsive === */
+@media (max-width: 900px) {
+    .sidebar {
+        width: 200px;
+    }
+    .main {
+        margin-left: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+    }
+    .main {
+        margin-left: 0;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+    <div class="logo">AssessmentSys</div>
+    <div class="actions">
+        <i class="fas fa-bell"></i>
+        <span> ▾</span>
+    </div>
+</div>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+    <a href="/candidate" class=""><i class="fas fa-home"></i> Dashboard</a>
+    <a href="/candidate/assessments" class=""><i class="fas fa-clipboard-list"></i> Assessments</a>
+    <a href="/candidate/results" class=""><i class="fas fa-chart-bar"></i> Results</a>
+    <a href="/candidate/notifications" class=""><i class="fas fa-bell"></i> Notifications</a>
+    <a href="/candidate/profile" class=""><i class="fas fa-user"></i> Profile</a>
+    <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+</nav>
+
+<main class="main">
+    
+<section class="section">
+    <!-- Score Bar at Top -->
+    <div style="background: linear-gradient(135deg, #1f4ed8, #1a3a9e); color: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">Assessment Progress</p>
+            <h3 style="margin: 0.5rem 0 0 0;">Intro to Python</h3>
+        </div>
+        <div style="text-align: right;">
+            <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">Progress</p>
+            <div id="progress_display" style="font-size: 1.8rem; font-weight: bold;">0 / 3 answered</div>
+        </div>
+    </div>
+
+    <!-- Timer & Instructions -->
+    <div style="background: #fff3e0; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <strong>⏱️ Timer:</strong> <span id="timer" style="color: #d32f2f; font-weight: bold; font-size: 1.2rem;">60:00</span> remaining
+        </div>
+        <div style="text-align: right;">
+            <strong>Remember:</strong> You must answer all questions before submitting. Your answers will be sent for grading.
+        </div>
+    </div>
+
+    <form method="post" id="assessment_form" style="background: white; padding: 2rem; border-radius: 10px; border: 1px solid #e0e0e0;">
+        <input type="hidden" name="time_spent" id="time_spent" value="0">
+
+        
+            
+                <div class="question_item" style="margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid #e0e0e0; ">
+                    <div style="display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem;">
+                        <div style="background: #1f4ed8; color: white; min-width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem;">
+                            1
+                        </div>
+                        <div style="flex: 1;">
+                            <h4 style="margin: 0; font-size: 1.1rem;">What is the correct way to create a list in Python?</h4>
+                            <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">
+                                <strong>10 points</strong> | 
+                                Multiple Choice
+                            </p>
+                        </div>
+                    </div>
+
+                    
+                        <div style="margin-left: 66px; background: #f9f9f9; padding: 1.5rem; border-radius: 8px;">
+                            
+                                <label style="display: flex; align-items: center; padding: 1rem; margin-bottom: 0.75rem; background: white; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; user-select: none;" class="option_label" data-question="1">
+                                    <input type="radio" 
+                                           name="question_1" 
+                                           value="0" 
+                                           style="margin-right: 1rem; width: 20px; height: 20px; cursor: pointer;"
+                                           class="question_input"
+                                           data-question-id="1">
+                                    <span>my_list = [1, 2, 3]</span>
+                                </label>
+                            
+                                <label style="display: flex; align-items: center; padding: 1rem; margin-bottom: 0.75rem; background: white; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; user-select: none;" class="option_label" data-question="1">
+                                    <input type="radio" 
+                                           name="question_1" 
+                                           value="1" 
+                                           style="margin-right: 1rem; width: 20px; height: 20px; cursor: pointer;"
+                                           class="question_input"
+                                           data-question-id="1">
+                                    <span>my_list = (1, 2, 3)</span>
+                                </label>
+                            
+                                <label style="display: flex; align-items: center; padding: 1rem; margin-bottom: 0.75rem; background: white; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; user-select: none;" class="option_label" data-question="1">
+                                    <input type="radio" 
+                                           name="question_1" 
+                                           value="2" 
+                                           style="margin-right: 1rem; width: 20px; height: 20px; cursor: pointer;"
+                                           class="question_input"
+                                           data-question-id="1">
+                                    <span>my_list = {1, 2, 3}</span>
+                                </label>
+                            
+                                <label style="display: flex; align-items: center; padding: 1rem; margin-bottom: 0.75rem; background: white; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; user-select: none;" class="option_label" data-question="1">
+                                    <input type="radio" 
+                                           name="question_1" 
+                                           value="3" 
+                                           style="margin-right: 1rem; width: 20px; height: 20px; cursor: pointer;"
+                                           class="question_input"
+                                           data-question-id="1">
+                                    <span>my_list = &lt;1, 2, 3&gt;</span>
+                                </label>
+                            
+                        </div>
+                    
+                </div>
+            
+                <div class="question_item" style="margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid #e0e0e0; ">
+                    <div style="display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem;">
+                        <div style="background: #1f4ed8; color: white; min-width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem;">
+                            2
+                        </div>
+                        <div style="flex: 1;">
+                            <h4 style="margin: 0; font-size: 1.1rem;">Which keyword is used to define a function in Python?</h4>
+                            <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">
+                                <strong>10 points</strong> | 
+                                Multiple Choice
+                            </p>
+                        </div>
+                    </div>
+
+                    
+                        <div style="margin-left: 66px; background: #f9f9f9; padding: 1.5rem; border-radius: 8px;">
+                            
+                                <label style="display: flex; align-items: center; padding: 1rem; margin-bottom: 0.75rem; background: white; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; user-select: none;" class="option_label" data-question="2">
+                                    <input type="radio" 
+                                           name="question_2" 
+                                           value="0" 
+                                           style="margin-right: 1rem; width: 20px; height: 20px; cursor: pointer;"
+                                           class="question_input"
+                                           data-question-id="2">
+                                    <span>func</span>
+                                </label>
+                            
+                                <label style="display: flex; align-items: center; padding: 1rem; margin-bottom: 0.75rem; background: white; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; user-select: none;" class="option_label" data-question="2">
+                                    <input type="radio" 
+                                           name="question_2" 
+                                           value="1" 
+                                           style="margin-right: 1rem; width: 20px; height: 20px; cursor: pointer;"
+                                           class="question_input"
+                                           data-question-id="2">
+                                    <span>define</span>
+                                </label>
+                            
+                                <label style="display: flex; align-items: center; padding: 1rem; margin-bottom: 0.75rem; background: white; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; user-select: none;" class="option_label" data-question="2">
+                                    <input type="radio" 
+                                           name="question_2" 
+                                           value="2" 
+                                           style="margin-right: 1rem; width: 20px; height: 20px; cursor: pointer;"
+                                           class="question_input"
+                                           data-question-id="2">
+                                    <span>def</span>
+                                </label>
+                            
+                                <label style="display: flex; align-items: center; padding: 1rem; margin-bottom: 0.75rem; background: white; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; user-select: none;" class="option_label" data-question="2">
+                                    <input type="radio" 
+                                           name="question_2" 
+                                           value="3" 
+                                           style="margin-right: 1rem; width: 20px; height: 20px; cursor: pointer;"
+                                           class="question_input"
+                                           data-question-id="2">
+                                    <span>function</span>
+                                </label>
+                            
+                        </div>
+                    
+                </div>
+            
+                <div class="question_item" style="margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid #e0e0e0; border-bottom: none;">
+                    <div style="display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem;">
+                        <div style="background: #1f4ed8; color: white; min-width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem;">
+                            3
+                        </div>
+                        <div style="flex: 1;">
+                            <h4 style="margin: 0; font-size: 1.1rem;">Explain the difference between a list and a tuple.</h4>
+                            <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">
+                                <strong>10 points</strong> | 
+                                Short Answer
+                            </p>
+                        </div>
+                    </div>
+
+                    
+                        <div style="margin-left: 66px;">
+                            <textarea name="question_3" 
+                                      rows="5" 
+                                      class="question_input" 
+                                      data-question-id="3"
+                                      style="width: 100%; padding: 1rem; border: 2px solid #ddd; border-radius: 8px; font-family: inherit; resize: vertical;"></textarea>
+                            <p style="margin: 0.5rem 0 0 0; color: #999; font-size: 0.85rem;">
+                                Write a detailed response (use complete sentences)
+                            </p>
+                        </div>
+                    
+                </div>
+            
+
+            <div style="background: #e8f5e9; padding: 2rem; border-radius: 10px; margin-top: 2rem; border: 2px solid #4caf50;">
+                <h4 style="margin-top: 0; color: #2e7d32;">✓ Ready to Submit?</h4>
+                <p style="margin: 0.5rem 0; color: #333;">
+                    Make sure you have answered all <strong>3</strong> questions. 
+                    After submission, you cannot modify your answers.
+                </p>
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.05rem;" onclick="return confirm('Are you sure? You will not be able to modify answers after submission.')">
+                        Submit Assessment
+                    </button>
+                </div>
+            </div>
+        
+    </form>
+</section>
+
+<script>
+    // Track time spent on assessment
+    let startTime = Date.now();
+    let timerInterval;
+    let totalMinutes = 60;
+    let totalSeconds = totalMinutes * 60;
+    
+    // Timer countdown
+    function updateTimer() {
+        let timeSpent = Math.floor((Date.now() - startTime) / 1000);
+        let timeRemaining = totalSeconds - timeSpent;
+        
+        if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            alert('Time is up! Your assessment will be automatically submitted.');
+            document.getElementById('assessment_form').submit();
+        }
+        
+        let minutes = Math.floor(timeRemaining / 60);
+        let seconds = timeRemaining % 60;
+        document.getElementById('timer').textContent = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+        
+        // Red warning when less than 5 minutes
+        if (timeRemaining < 300) {
+            document.getElementById('timer').style.color = '#d32f2f';
+        }
+        
+        document.getElementById('time_spent').value = timeSpent;
+    }
+    
+    timerInterval = setInterval(updateTimer, 1000);
+    updateTimer(); // Initial call
+    
+    // Track progress (questions answered)
+    function updateProgress() {
+        let answeredCount = 0;
+        document.querySelectorAll('.question_input:checked, .question_input[type="textarea"]').forEach(el => {
+            if (el.type === 'radio' && el.checked) {
+                answeredCount++;
+            } else if (el.type === 'textarea' && el.value.trim()) {
+                answeredCount++;
+            }
+        });
+        document.getElementById('progress_display').textContent = answeredCount + ' / 3 answered';
+    }
+    
+    // Better progress tracking
+    function trackAllAnswers() {
+        const answers = {};
+        document.querySelectorAll('input[type="radio"]:checked, textarea').forEach(el => {
+            if (el.type === 'radio' && el.checked) {
+                answers[el.name] = el.value;
+            } else if (el.type === 'textarea' && el.value.trim()) {
+                answers[el.name] = el.value;
+            }
+        });
+        
+        let answeredCount = Object.keys(answers).length;
+        document.getElementById('progress_display').textContent = answeredCount + ' / 3 answered';
+    }
+    
+    // Listen for changes
+    document.querySelectorAll('input[type="radio"], textarea').forEach(el => {
+        el.addEventListener('change', trackAllAnswers);
+        el.addEventListener('input', trackAllAnswers);
+    });
+    
+    // Prevent accidental page exit
+    window.addEventListener('beforeunload', function(e) {
+        if (document.querySelectorAll('input:checked, textarea').length > 0) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+</script>
+
+<style>
+    .option_label:hover {
+        background-color: #e3f2fd;
+        border-color: #1f4ed8;
+    }
+    
+    .option_label input:checked + span {
+        font-weight: 600;
+    }
+    
+    input[type="radio"]:checked + span {
+        color: #1f4ed8;
+        font-weight: bold;
+    }
+</style>
+
+</main>
+
+</body>
+</html>

@@ -1,0 +1,217 @@
+HTTP/1.1 302 FOUND
+Server: Werkzeug/3.1.6 Python/3.12.1
+Date: Tue, 03 Mar 2026 13:38:04 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 199
+Location: /login
+Vary: Cookie
+Set-Cookie: session=eyJfZmxhc2hlcyI6W3siIHQiOlsiZGFuZ2VyIiwiUGxlYXNlIGxvZyBpbiBmaXJzdC4iXX1dfQ.aabkPA.V7BDyRf3YV1BHBpUC7SyElDavtE; HttpOnly; Path=/
+Connection: close
+
+HTTP/1.1 200 OK
+Server: Werkzeug/3.1.6 Python/3.12.1
+Date: Tue, 03 Mar 2026 13:38:04 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 3685
+Vary: Cookie
+Connection: close
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login – Advanced Test System</title>
+
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+<style>
+:root {
+    --navy: #0b1f3a;
+    --navy-light: #132f5c;
+    --accent: #1f4ed8;
+    --white: #ffffff;
+    --gray: #f4f7fb;
+}
+
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, var(--navy), var(--navy-light));
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Login Card */
+.container {
+    background: var(--white);
+    width: 100%;
+    max-width: 420px;
+    padding: 2.5rem;
+    border-radius: 20px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+    animation: fadeUp 0.9s ease forwards;
+}
+
+/* Title */
+h1 {
+    text-align: center;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+    color: var(--navy);
+}
+
+.subtitle {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 2rem;
+}
+
+/* Messages */
+.message {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+}
+
+.message.error {
+    background: #ffe5e5;
+    color: #b00020;
+}
+
+/* Form */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+/* Inputs */
+.input-group {
+    position: relative;
+}
+
+.input-group i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+}
+
+input {
+    width: 100%;
+    padding: 0.9rem 0.9rem 0.9rem 2.8rem;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(31,78,216,0.1);
+}
+
+/* Button */
+button {
+    margin-top: 0.5rem;
+    padding: 0.9rem;
+    border-radius: 50px;
+    border: none;
+    background: linear-gradient(135deg, var(--navy), var(--accent));
+    color: var(--white);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(31,78,216,0.4);
+}
+
+/* Footer Links */
+.footer-links {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.85rem;
+}
+
+.footer-links a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.footer-links a:hover {
+    text-decoration: underline;
+}
+
+/* Animation */
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    .container {
+        padding: 2rem;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>Welcome Back</h1>
+    <p class="subtitle">Sign in to continue your assessment</p>
+
+    
+      
+    
+
+    <form method="post">
+        <div class="input-group">
+            <i class="fas fa-envelope"></i>
+            <input type="email" name="email" placeholder="Email address" required>
+        </div>
+
+        <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input type="password" name="password" placeholder="Password" required>
+        </div>
+
+        <button type="submit">Sign In</button>
+    </form>
+
+    <div class="footer-links">
+        <a href="#">Forgot password?</a>
+    </div>
+</div>
+
+</body>
+</html>

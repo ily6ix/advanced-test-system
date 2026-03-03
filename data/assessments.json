@@ -46,15 +46,35 @@
     "results": [
       {
         "candidate_id": 4,
-        "status": "not_started",
-        "submitted_date": null,
-        "time_spent": 0,
-        "answers": [],
-        "total_score": null,
-        "score_percentage": null,
-        "passed": null,
-        "graded_by_admin": null,
-        "graded_date": null
+        "status": "completed",
+        "submitted_date": "2026-03-03T13:41:38.500636",
+        "time_spent": 23,
+        "answers": [
+          {
+            "question_id": 1,
+            "candidate_answer": "0",
+            "allocated_points": 10,
+            "graded": true
+          },
+          {
+            "question_id": 2,
+            "candidate_answer": "0",
+            "allocated_points": 0,
+            "graded": true
+          },
+          {
+            "question_id": 3,
+            "candidate_answer": "3ert",
+            "allocated_points": 0,
+            "graded": true
+          }
+        ],
+        "total_score": 10,
+        "score_percentage": 33,
+        "passed": false,
+        "graded_by_admin": 1,
+        "graded_date": "2026-03-03T13:45:01.570177",
+        "start_date": "2026-03-03T13:41:10.997745"
       }
     ]
   },

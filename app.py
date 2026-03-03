@@ -180,7 +180,8 @@ def admin_assessments():
 def admin_results():
     if not require_login('Administrator'):
         return redirect(url_for('login'))
-    return render_template('admin_results.html', active='results')
+    # provide assessments and users to the template so grading links can be rendered
+    return render_template('admin_results.html', active='results', assessments=assessments, users=users)
 
 @app.route('/admin/reports')
 def admin_reports():

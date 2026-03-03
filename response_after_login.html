@@ -1,3 +1,11 @@
+HTTP/1.1 200 OK
+Server: Werkzeug/3.1.6 Python/3.12.1
+Date: Tue, 03 Mar 2026 13:38:55 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 7941
+Vary: Cookie
+Connection: close
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -224,32 +232,80 @@ th {
     <div class="logo">AssessmentSys</div>
     <div class="actions">
         <i class="fas fa-bell"></i>
-        <span>{{ active|capitalize }} ▾</span>
+        <span> ▾</span>
     </div>
 </div>
 
 <!-- SIDEBAR -->
 <nav class="sidebar">
-    <a href="{{ url_for('candidate_dashboard') }}" class="{% if active == 'dashboard' %}active{% endif %}"><i class="fas fa-home"></i> Dashboard</a>
-    <a href="{{ url_for('candidate_assessments') }}" class="{% if active == 'assessments' %}active{% endif %}"><i class="fas fa-clipboard-list"></i> Assessments</a>
-    <a href="{{ url_for('candidate_results') }}" class="{% if active == 'results' %}active{% endif %}"><i class="fas fa-chart-bar"></i> Results</a>
-    <a href="{{ url_for('candidate_notifications') }}" class="{% if active == 'notifications' %}active{% endif %}"><i class="fas fa-bell"></i> Notifications</a>
-    <a href="{{ url_for('candidate_profile') }}" class="{% if active == 'profile' %}active{% endif %}"><i class="fas fa-user"></i> Profile</a>
-    <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    <a href="/candidate" class=""><i class="fas fa-home"></i> Dashboard</a>
+    <a href="/candidate/assessments" class=""><i class="fas fa-clipboard-list"></i> Assessments</a>
+    <a href="/candidate/results" class=""><i class="fas fa-chart-bar"></i> Results</a>
+    <a href="/candidate/notifications" class=""><i class="fas fa-bell"></i> Notifications</a>
+    <a href="/candidate/profile" class=""><i class="fas fa-user"></i> Profile</a>
+    <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
 </nav>
 
 <main class="main">
-    {% block content %}{% endblock %}
-</main>
-</main>
+    
+<section class="section" style="max-width: 900px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h1 style="margin-bottom: 0.5rem;">Intro to Python</h1>
+        <p style="color: #666; font-size: 1.1rem;">A basic assessment covering Python fundamentals.</p>
+    </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.section').forEach(function(el) {
-        el.classList.add('show');
-    });
-});
-</script>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem;">
+        <div style="background: #f0f8ff; padding: 2rem; border-radius: 10px; border-left: 4px solid #1f4ed8;">
+            <h3 style="margin-top: 0;">📋 Assessment Details</h3>
+            <div style="margin: 1rem 0;">
+                <p style="margin: 0.5rem 0;"><strong>Duration:</strong> <span style="font-size: 1.2rem; color: #d32f2f;">60 minutes</span></p>
+                <p style="margin: 0.5rem 0;"><strong>Total Questions:</strong> 3</p>
+                <p style="margin: 0.5rem 0;"><strong>Question Types:</strong> Multiple Choice & Short Answer</p>
+                <p style="margin: 0.5rem 0;"><strong>Passing Score:</strong> <span style="color: #388e3c; font-weight: 600;">70%</span></p>
+            </div>
+        </div>
+
+        <div style="background: #fff3e0; padding: 2rem; border-radius: 10px; border-left: 4px solid #ff9800;">
+            <h3 style="margin-top: 0;">⚠️ Important Rules</h3>
+            <ul style="margin: 1rem 0; padding-left: 1.5rem; line-height: 1.8;">
+                <li>You will have <strong>60 minutes</strong> to complete the assessment</li>
+                <li>Once you <strong>submit</strong>, you cannot modify your answers</li>
+                <li>Answer all questions carefully</li>
+                <li>For multiple choice, select the best answer</li>
+                <li>For short answer, provide detailed responses</li>
+                <li>Your score will be calculated after admin grading</li>
+            </ul>
+        </div>
+    </div>
+
+    <div style="background: #f5f5f5; padding: 2rem; border-radius: 10px; margin-bottom: 2rem;">
+        <h3 style="margin-top: 0;">📝 Scoring Information</h3>
+        <p style="margin: 0.5rem 0; line-height: 1.8;">
+            This assessment contains <strong>3 questions</strong> worth a total of 
+            <strong>30 points</strong>. 
+            Your final score will be calculated as a percentage of total points available. 
+            You need to score at least <strong>70%</strong> to pass this assessment.
+        </p>
+    </div>
+
+    <div style="display: flex; gap: 1rem; justify-content: center; padding-top: 1rem; border-top: 2px solid #e0e0e0;">
+        <form method="post" style="margin: 0;">
+            <input type="hidden" name="action" value="start">
+            <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.05rem; min-width: 200px;">
+                ✓ Start Assessment
+            </button>
+        </form>
+        <a href="/candidate/assessments" class="btn btn-secondary" style="padding: 1rem 3rem; font-size: 1.05rem; min-width: 200px;">
+            ✗ Cancel & Go Back
+        </a>
+    </div>
+
+    <p style="text-align: center; color: #999; margin-top: 2rem; font-size: 0.9rem;">
+        💡 Tip: Make sure you have a stable internet connection before starting the assessment.
+    </p>
+</section>
+
+</main>
 
 </body>
 </html>
