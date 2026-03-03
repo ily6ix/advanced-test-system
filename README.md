@@ -141,8 +141,8 @@ advanced-test-system/
 flowchart LR
     Start(["User"]) --> Login["/login"]
     Login -->|Email & Password| Auth{"Role Check"}
-    Auth -->|Administrator| Admin["🔑 /admin"]
-    Auth -->|Candidate| Candidate["📝 /candidate"]
+    Auth -->|Administrator| Admin[" /admin"]
+    Auth -->|Candidate| Candidate[" /candidate"]
     
     Admin --> AO["Overview<br>/admin"]
     Admin --> AC["Manage Users<br>/admin/candidates"]
@@ -163,7 +163,7 @@ flowchart LR
 
 ---
 
-## 📈 Assessment Lifecycle (Data Flow)
+##  Assessment Lifecycle (Data Flow)
 
 ### Phase 1: Admin Creates Assessment
 ```
