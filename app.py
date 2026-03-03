@@ -592,9 +592,22 @@ def take_assessment(assessment_id):
         None
     )
     
+    # If no result exists, create one on first access
     if not result:
-        flash('Assessment not found for you.', 'danger')
-        return redirect(url_for('candidate_assessments'))
+        result = {
+            'candidate_id': candidate_id,
+            'status': 'not_started',
+            'answers': [],
+            'submitted_date': None,
+            'graded_date': None,
+            'score_percentage': None,
+            'allocated_points': None,
+            'passed': None,
+            'time_spent': 0,
+            'due_date': None
+        }
+        assessment.get('results', []).append(result)
+        save_to_file('assessments.json', assessments)
     
     # If assessment is already completed, show results instead
     if result.get('status') == 'completed':
@@ -612,7 +625,10 @@ def take_assessment(assessment_id):
         return redirect(url_for('candidate_assessments'))
     
     if action == 'start':
-        # User clicked "Start Assessment" - show the assessment form
+        # User clicked "Start Assessment" - mark as in_progress and show the assessment form
+        result['status'] = 'in_progress'
+        result['start_date'] = datetime.now().isoformat()
+        save_to_file('assessments.json', assessments)
         return render_template('take_assessment.html', assessment=assessment, result=result)
     
     # Otherwise, process submitted answers

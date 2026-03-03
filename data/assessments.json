@@ -6,13 +6,20 @@
     "duration": 60,
     "passing_score": 70,
     "is_published": true,
-    "assigned_to": [4],
+    "assigned_to": [
+      4
+    ],
     "questions": [
       {
         "id": 1,
         "text": "What is the correct way to create a list in Python?",
         "type": "multiple_choice",
-        "options": ["my_list = [1, 2, 3]", "my_list = (1, 2, 3)", "my_list = {1, 2, 3}", "my_list = <1, 2, 3>"],
+        "options": [
+          "my_list = [1, 2, 3]",
+          "my_list = (1, 2, 3)",
+          "my_list = {1, 2, 3}",
+          "my_list = <1, 2, 3>"
+        ],
         "correct_answer": 0,
         "points": 10
       },
@@ -20,7 +27,12 @@
         "id": 2,
         "text": "Which keyword is used to define a function in Python?",
         "type": "multiple_choice",
-        "options": ["func", "define", "def", "function"],
+        "options": [
+          "func",
+          "define",
+          "def",
+          "function"
+        ],
         "correct_answer": 2,
         "points": 10
       },
@@ -38,9 +50,24 @@
         "submitted_date": "2026-02-15T10:30:00",
         "time_spent": 45,
         "answers": [
-          {"question_id": 1, "candidate_answer": 0, "allocated_points": 10, "graded": true},
-          {"question_id": 2, "candidate_answer": 2, "allocated_points": 10, "graded": true},
-          {"question_id": 3, "candidate_answer": "Lists are mutable, tuples are immutable", "allocated_points": 8, "graded": true}
+          {
+            "question_id": 1,
+            "candidate_answer": 0,
+            "allocated_points": 10,
+            "graded": true
+          },
+          {
+            "question_id": 2,
+            "candidate_answer": 2,
+            "allocated_points": 10,
+            "graded": true
+          },
+          {
+            "question_id": 3,
+            "candidate_answer": "Lists are mutable, tuples are immutable",
+            "allocated_points": 8,
+            "graded": true
+          }
         ],
         "total_score": 28,
         "score_percentage": 93,
@@ -57,21 +84,22 @@
     "duration": 45,
     "passing_score": 80,
     "is_published": true,
-    "assigned_to": [4],
+    "assigned_to": [
+      4
+    ],
     "questions": [
       {
         "id": 1,
         "text": "What is a JOIN in SQL?",
         "type": "multiple_choice",
-        "options": ["Combines rows from multiple tables", "Splits data into multiple tables", "Merges databases", "Deletes duplicate rows"],
+        "options": [
+          "Combines rows from multiple tables",
+          "Splits data into multiple tables",
+          "Merges databases",
+          "Deletes duplicate rows"
+        ],
         "correct_answer": 0,
         "points": 5
-      },
-      {
-        "id": 2,
-        "text": "Write a query to find employees with salary > 50000",
-        "type": "short_answer",
-        "points": 15
       }
     ],
     "results": [
@@ -97,13 +125,20 @@
     "duration": 50,
     "passing_score": 75,
     "is_published": true,
-    "assigned_to": [4],
+    "assigned_to": [
+      4
+    ],
     "questions": [
       {
         "id": 1,
         "text": "What comes next in the sequence: 2, 4, 8, 16, ?",
         "type": "multiple_choice",
-        "options": ["24", "32", "30", "28"],
+        "options": [
+          "24",
+          "32",
+          "30",
+          "28"
+        ],
         "correct_answer": 1,
         "points": 10
       }
@@ -114,7 +149,14 @@
         "status": "in_progress",
         "submitted_date": null,
         "time_spent": 30,
-        "answers": [{"question_id": 1, "candidate_answer": 2, "allocated_points": null, "graded": false}],
+        "answers": [
+          {
+            "question_id": 1,
+            "candidate_answer": 2,
+            "allocated_points": null,
+            "graded": false
+          }
+        ],
         "total_score": null,
         "score_percentage": null,
         "passed": null,
