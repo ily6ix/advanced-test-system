@@ -1,0 +1,415 @@
+HTTP/1.1 200 OK
+Server: Werkzeug/3.1.6 Python/3.12.1
+Date: Tue, 03 Mar 2026 13:47:01 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 13148
+Vary: Cookie
+Connection: close
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin Area</title>
+
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+<style>
+:root {
+    --navy: #0b1f3a;
+    --navy-light: #132f5c;
+    --accent: #1f4ed8;
+    --bg: #f4f7fb;
+    --white: #ffffff;
+    --text-muted: #6b7280;
+    --radius: 14px;
+}
+
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--navy);
+}
+
+/* ================= TOP BAR ================= */
+.topbar {
+    height: 64px;
+    background: var(--navy);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+}
+
+.logo {
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    font-size: 0.9rem;
+}
+
+.actions i {
+    cursor: pointer;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    width: 240px;
+    height: calc(100vh - 64px);
+    background: var(--white);
+    border-right: 1px solid #e5e7eb;
+    padding-top: 1rem;
+}
+
+.sidebar a {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.75rem 1.2rem;
+    color: var(--navy);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.sidebar a i {
+    color: var(--accent);
+}
+
+.sidebar a:hover {
+    background: #eef2ff;
+    padding-left: 1.6rem;
+}
+
+/* ================= MAIN ================= */
+.main {
+    margin-left: 240px;
+    margin-top: 64px;
+    padding: 2rem;
+}
+
+.section {
+    margin-bottom: 3rem;
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+.section.show {
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.6s ease;
+}
+
+.section h2 {
+    margin-bottom: 1.5rem;
+}
+
+/* ================= KPI CARDS ================= */
+.kpi-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.card {
+    background: var(--white);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+    transition: all 0.4s ease;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.1);
+}
+
+.card h4 {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.card p {
+    font-size: 1.6rem;
+    font-weight: 700;
+}
+
+/* ================= TABLE ================= */
+table {
+    width: 100%;
+    background: var(--white);
+    border-radius: var(--radius);
+    border-collapse: collapse;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 0.9rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+th {
+    background: #f9fafb;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* ================= BUTTONS ================= */
+.btn {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    border: none;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary {
+    background: #eef2ff;
+    color: var(--accent);
+}
+
+.btn-secondary:hover {
+    background: var(--accent);
+    color: var(--white);
+}
+
+/* === responsive === */
+@media (max-width: 900px) {
+    .sidebar {
+        width: 200px;
+    }
+    .main {
+        margin-left: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+    }
+    .main {
+        margin-left: 0;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+    <div class="logo">AssessmentSys</div>
+    <div class="actions">
+        <i class="fas fa-bell"></i>
+        <span> ▾</span>
+    </div>
+</div>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+    <a href="/admin" class=""><i class="fas fa-chart-line"></i> Overview</a>
+    <a href="/admin/candidates" class=""><i class="fas fa-users"></i> Candidates</a>
+    <a href="/admin/assessments" class=""><i class="fas fa-clipboard-list"></i> Assessments</a>
+    <a href="/admin/results" class=""><i class="fas fa-chart-pie"></i> Results</a>
+    <a href="/admin/reports" class=""><i class="fas fa-file-export"></i> Reports</a>
+    <a href="/admin/security" class=""><i class="fas fa-shield-alt"></i> Security</a>
+    <a href="/admin/settings" class=""><i class="fas fa-cog"></i> Settings</a>
+    <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+</nav>
+
+<main class="main">
+    
+<section class="section">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h2>Grade Assessment</h2>
+            <p style="color: #666; margin: 0.5rem 0;">Assessment: <strong>Intro to Python</strong></p>
+            <p style="color: #666; margin: 0;">Candidate: <strong>goitseone (goitseonetrade@gmail.com)</strong></p>
+        </div>
+        <a href="/admin/results" class="btn btn-secondary">Back to Results</a>
+    </div>
+
+    <form method="post" style="background: white; padding: 2rem; border-radius: 10px; border: 1px solid #e0e0e0;">
+        <div style="background: #f0f8ff; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+            <h3 style="margin: 0;">Submission Details</h3>
+            <p style="margin: 0.5rem 0; color: #666;">
+                <strong>Submitted:</strong> 2026-03-03 13:41:38
+            </p>
+            <p style="margin: 0;">
+                <strong>Time Spent:</strong> 23 minutes
+            </p>
+        </div>
+
+        
+            
+                
+                
+                    <div style="margin-bottom: 2.5rem; padding: 1.5rem; background: #f9f9f9; border-radius: 8px; border-left: 4px solid #1f4ed8;">
+                        <h4 style="margin: 0 0 1rem 0;">Question 1: What is the correct way to create a list in Python?</h4>
+                        
+                        <div style="margin-bottom: 1.5rem; padding: 1rem; background: white; border-radius: 6px;">
+                            <p style="margin: 0 0 0.5rem 0; color: #666;"><strong>Type:</strong> Multiple Choice</p>
+                            
+                            
+                                <p style="margin: 0 0 0.5rem 0;"><strong>Correct Answer:</strong> my_list = [1, 2, 3]</p>
+                                <p style="margin: 0;"><strong>Candidate Answer:</strong> 
+                                    
+                                        my_list = [1, 2, 3]
+                                        
+                                            <span style="color: green; font-weight: 600;">✓ Correct</span>
+                                        
+                                    
+                                </p>
+                            
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; align-items: flex-end;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Allocate Points (Max: 10):</label>
+                                <input type="number" 
+                                       name="points_1" 
+                                       min="0" 
+                                       max="10" 
+                                       value="10" 
+                                       required
+                                       style="width: 120px; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                            </div>
+                            <div style="color: #666; font-size: 0.9rem;">
+                                out of <strong>10</strong> points
+                            </div>
+                        </div>
+                    </div>
+                
+            
+                
+                
+                    <div style="margin-bottom: 2.5rem; padding: 1.5rem; background: #f9f9f9; border-radius: 8px; border-left: 4px solid #1f4ed8;">
+                        <h4 style="margin: 0 0 1rem 0;">Question 2: Which keyword is used to define a function in Python?</h4>
+                        
+                        <div style="margin-bottom: 1.5rem; padding: 1rem; background: white; border-radius: 6px;">
+                            <p style="margin: 0 0 0.5rem 0; color: #666;"><strong>Type:</strong> Multiple Choice</p>
+                            
+                            
+                                <p style="margin: 0 0 0.5rem 0;"><strong>Correct Answer:</strong> def</p>
+                                <p style="margin: 0;"><strong>Candidate Answer:</strong> 
+                                    
+                                        func
+                                        
+                                            <span style="color: red; font-weight: 600;">✗ Incorrect</span>
+                                        
+                                    
+                                </p>
+                            
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; align-items: flex-end;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Allocate Points (Max: 10):</label>
+                                <input type="number" 
+                                       name="points_2" 
+                                       min="0" 
+                                       max="10" 
+                                       value="" 
+                                       required
+                                       style="width: 120px; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                            </div>
+                            <div style="color: #666; font-size: 0.9rem;">
+                                out of <strong>10</strong> points
+                            </div>
+                        </div>
+                    </div>
+                
+            
+                
+                
+                    <div style="margin-bottom: 2.5rem; padding: 1.5rem; background: #f9f9f9; border-radius: 8px; border-left: 4px solid #1f4ed8;">
+                        <h4 style="margin: 0 0 1rem 0;">Question 3: Explain the difference between a list and a tuple.</h4>
+                        
+                        <div style="margin-bottom: 1.5rem; padding: 1rem; background: white; border-radius: 6px;">
+                            <p style="margin: 0 0 0.5rem 0; color: #666;"><strong>Type:</strong> Short Answer</p>
+                            
+                            
+                                <p style="margin: 0; padding: 0.75rem; background: #f5f5f5; border-radius: 4px; border-left: 3px solid #ff9800;">
+                                    <strong>Answer:</strong> 3ert
+                                </p>
+                            
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; align-items: flex-end;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Allocate Points (Max: 10):</label>
+                                <input type="number" 
+                                       name="points_3" 
+                                       min="0" 
+                                       max="10" 
+                                       value="" 
+                                       required
+                                       style="width: 120px; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                            </div>
+                            <div style="color: #666; font-size: 0.9rem;">
+                                out of <strong>10</strong> points
+                            </div>
+                        </div>
+                    </div>
+                
+            
+
+            <div style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid #333; text-align: center;">
+                <p style="margin-bottom: 1rem; color: #666;">
+                    Review all answers above and allocate points, then click "Submit Grades"
+                </p>
+                <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.05rem;">
+                    Submit Grades
+                </button>
+            </div>
+        
+    </form>
+</section>
+
+
+<!-- Scroll Animation -->
+<script>
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add("show");
+        }
+    });
+}, { threshold: 0.15 });
+
+document.querySelectorAll(".section").forEach(sec => observer.observe(sec));
+</script>
+
+</body>
+</html>
