@@ -137,26 +137,27 @@ advanced-test-system/
 
 ### User Navigation Flow
 ```mermaid
+
 flowchart LR
-    Start([User]) --> Login[/login]
-    Login -->|Email & Password| Auth{Role Check}
+    Start(["User"]) --> Login["/login"]
+    Login -->|Email & Password| Auth{"Role Check"}
     Auth -->|Administrator| Admin["🔑 /admin"]
     Auth -->|Candidate| Candidate["📝 /candidate"]
     
-    Admin --> AO["Overview<br/>/admin"]
-    Admin --> AC["Manage Users<br/>/admin/candidates"]
-    Admin --> AA["Manage Assessments<br/>/admin/assessments"]
-    Admin --> MQ["Manage Questions<br/>/admin/assessments/id/questions"]
-    Admin --> AR["Grade Results<br/>/admin/results"]
+    Admin --> AO["Overview<br>/admin"]
+    Admin --> AC["Manage Users<br>/admin/candidates"]
+    Admin --> AA["Manage Assessments<br>/admin/assessments"]
+    Admin --> MQ["Manage Questions<br>/admin/assessments/id/questions"]
+    Admin --> AR["Grade Results<br>/admin/results"]
     
-    Candidate --> CD["Dashboard<br/>/candidate"]
-    Candidate --> CA["Assessments<br/>/candidate/assessments"]
-    Candidate --> TA["Take Test<br/>/candidate/assessments/id/take"]
-    Candidate --> CR["View Results<br/>/candidate/results"]
-    Candidate --> CN["Notifications<br/>/candidate/notifications"]
-    Candidate --> CP["Profile<br/>/candidate/profile"]
+    Candidate --> CD["Dashboard<br>/candidate"]
+    Candidate --> CA["Assessments<br>/candidate/assessments"]
+    Candidate --> TA["Take Test<br>/candidate/assessments/id/take"]
+    Candidate --> CR["View Results<br>/candidate/results"]
+    Candidate --> CN["Notifications<br>/candidate/notifications"]
+    Candidate --> CP["Profile<br>/candidate/profile"]
     
-    AO --> Logout([/logout])
+    AO --> Logout["/logout"]
     AR --> Logout
     CR --> Logout
 
