@@ -46,34 +46,15 @@
     "results": [
       {
         "candidate_id": 4,
-        "status": "completed",
-        "submitted_date": "2026-02-15T10:30:00",
-        "time_spent": 45,
-        "answers": [
-          {
-            "question_id": 1,
-            "candidate_answer": 0,
-            "allocated_points": 10,
-            "graded": true
-          },
-          {
-            "question_id": 2,
-            "candidate_answer": 2,
-            "allocated_points": 10,
-            "graded": true
-          },
-          {
-            "question_id": 3,
-            "candidate_answer": "Lists are mutable, tuples are immutable",
-            "allocated_points": 8,
-            "graded": true
-          }
-        ],
-        "total_score": 28,
-        "score_percentage": 93,
-        "passed": true,
-        "graded_by_admin": 1,
-        "graded_date": "2026-02-15T11:00:00"
+        "status": "not_started",
+        "submitted_date": null,
+        "time_spent": 0,
+        "answers": [],
+        "total_score": null,
+        "score_percentage": null,
+        "passed": null,
+        "graded_by_admin": null,
+        "graded_date": null
       }
     ]
   },
@@ -83,7 +64,7 @@
     "description": "Query optimization and complex joins.",
     "duration": 45,
     "passing_score": 80,
-    "is_published": true,
+    "is_published": false,
     "assigned_to": [
       4
     ],
@@ -124,7 +105,7 @@
     "description": "Test your logical reasoning and problem-solving skills.",
     "duration": 50,
     "passing_score": 75,
-    "is_published": true,
+    "is_published": false,
     "assigned_to": [
       4
     ],

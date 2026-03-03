@@ -355,7 +355,7 @@ def calculate_candidate_stats(candidate_id):
     pending = sum(1 for ca in cand_assessments if ca['result'].get('status') in ['not_started', 'in_progress'])
     
     scores = [ca['result']['score_percentage'] for ca in cand_assessments if ca['result'].get('score_percentage') is not None]
-    average_score = (sum(scores) // len(scores)) if scores else 0
+    average_score = int(sum(scores) / len(scores)) if scores else 0
     
     # Find the nearest due date
     next_due = None
