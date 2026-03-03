@@ -159,7 +159,6 @@ flowchart LR
     AO --> Logout([/logout])
     AR --> Logout
     CR --> Logout
-```
 
 ---
 
