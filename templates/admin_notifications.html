@@ -1,0 +1,160 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+
+<section class="section">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2>Notifications</h2>
+        {% if notifications %}
+            <div style="display: flex; gap: 0.5rem;">
+                <button onclick="markAllAsRead()" class="btn btn-secondary" style="padding: 0.6rem 1.2rem;">Mark All as Read</button>
+                <button onclick="clearAllNotifications()" class="btn btn-secondary" style="padding: 0.6rem 1.2rem;">Clear All</button>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if notifications %}
+        <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+            <div style="background: var(--white); padding: 1rem; border-radius: var(--radius); box-shadow: 0 20px 40px rgba(0,0,0,0.05); flex: 1;">
+                <h4 style="color: var(--text-muted); margin-bottom: 0.5rem; font-size: 0.85rem;">Unread</h4>
+                <p style="font-size: 1.8rem; font-weight: 700;">{{ unread_count }}</p>
+            </div>
+            <div style="background: var(--white); padding: 1rem; border-radius: var(--radius); box-shadow: 0 20px 40px rgba(0,0,0,0.05); flex: 1;">
+                <h4 style="color: var(--text-muted); margin-bottom: 0.5rem; font-size: 0.85rem;">Total</h4>
+                <p style="font-size: 1.8rem; font-weight: 700;">{{ notifications|length }}</p>
+            </div>
+        </div>
+
+        <div id="notificationsContainer" style="background: var(--white); border-radius: var(--radius); box-shadow: 0 20px 40px rgba(0,0,0,0.05); overflow: hidden;">
+            {% for notif in notifications %}
+                <div id="notif-{{ notif.id }}" class="notification-item" style="
+                    padding: 1.5rem;
+                    border-bottom: 1px solid #e5e7eb;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    gap: 1rem;
+                    transition: all 0.3s ease;
+                    {% if not notif.read %}background: #f0f4ff;{% endif %}
+                ">
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.5rem;">
+                            <span style="
+                                font-size: 0.7rem;
+                                padding: 0.3rem 0.6rem;
+                                border-radius: 20px;
+                                font-weight: 600;
+                                {% if notif.type == 'assessment_submitted' %}
+                                    background: #d1fae5;
+                                    color: #065f46;
+                                {% elif notif.type == 'assessment_assigned' %}
+                                    background: #dbeafe;
+                                    color: #0c2d6b;
+                                {% elif notif.type == 'assessment_graded' %}
+                                    background: #fef3c7;
+                                    color: #78350f;
+                                {% else %}
+                                    background: #f3f4f6;
+                                    color: #374151;
+                                {% endif %}
+                            ">
+                                {{ notif.type.replace('_', ' ')|title }}
+                            </span>
+                            {% if not notif.read %}
+                                <span style="width: 8px; height: 8px; background: var(--accent); border-radius: 50%;"></span>
+                            {% endif %}
+                        </div>
+                        <h4 style="margin: 0.5rem 0; color: var(--navy); font-weight: 600;">{{ notif.title }}</h4>
+                        <p style="margin: 0.3rem 0; color: var(--text-muted); font-size: 0.9rem;">{{ notif.message }}</p>
+                        <small style="color: #9ca3af; margin-top: 0.5rem; display: block;">
+                            {{ notif.created_at|replace('T', ' ')|truncate(19, True, '') }}
+                        </small>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        {% if not notif.read %}
+                            <button onclick="markAsRead({{ notif.id }})" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">
+                                <i class="fas fa-check"></i> Mark Read
+                            </button>
+                        {% endif %}
+                        {% if notif.related_assessment_id %}
+                            <a href="{{ url_for('admin_assessments') }}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.75rem;">
+                                <i class="fas fa-arrow-right"></i> View
+                            </a>
+                        {% endif %}
+                        <button onclick="deleteNotification({{ notif.id }})" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; background: #fee2e2; color: #991b1b;">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="background: var(--white); padding: 3rem; border-radius: var(--radius); text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.05);">
+            <i class="fas fa-bell-slash" style="font-size: 3rem; color: #d1d5db; margin-bottom: 1rem;"></i>
+            <p style="color: var(--text-muted); font-size: 1.1rem;">No notifications yet</p>
+            <small style="color: #9ca3af;">Notifications will appear here when candidates submit assessments or assessments are assigned</small>
+        </div>
+    {% endif %}
+</section>
+
+<style>
+    .notification-item:last-child {
+        border-bottom: none;
+    }
+
+    .notification-item:hover {
+        background: #fafbff !important;
+    }
+</style>
+
+<script>
+function markAsRead(notifId) {
+    fetch(`/admin/notifications/${notifId}/read`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+}
+
+function deleteNotification(notifId) {
+    if (confirm('Delete this notification?')) {
+        fetch(`/admin/notifications/${notifId}`, { method: 'DELETE' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const elem = document.getElementById(`notif-${notifId}`);
+                    elem.style.opacity = '0';
+                    setTimeout(() => location.reload(), 300);
+                }
+            });
+    }
+}
+
+function markAllAsRead() {
+    if (confirm('Mark all notifications as read?')) {
+        fetch('/admin/notifications/mark-all-read', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+    }
+}
+
+function clearAllNotifications() {
+    if (confirm('Delete all notifications? This cannot be undone.')) {
+        fetch('/admin/notifications/clear-all', { method: 'DELETE' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+    }
+}
+</script>
+
+{% endblock %}

@@ -235,6 +235,7 @@ th {
     <a href="{{ url_for('admin_assessments') }}" class="{% if active == 'assessments' %}active{% endif %}"><i class="fas fa-clipboard-list"></i> Assessments</a>
     <a href="{{ url_for('admin_results') }}" class="{% if active == 'results' %}active{% endif %}"><i class="fas fa-chart-pie"></i> Results</a>
     <a href="{{ url_for('admin_reports') }}" class="{% if active == 'reports' %}active{% endif %}"><i class="fas fa-file-export"></i> Reports</a>
+    <a href="{{ url_for('admin_notifications') }}" class="{% if active == 'notifications' %}active{% endif %}"><i class="fas fa-bell"></i> Notifications</a>
     <a href="{{ url_for('admin_security') }}" class="{% if active == 'security' %}active{% endif %}"><i class="fas fa-shield-alt"></i> Security</a>
     <a href="{{ url_for('admin_settings') }}" class="{% if active == 'settings' %}active{% endif %}"><i class="fas fa-cog"></i> Settings</a>
     <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>

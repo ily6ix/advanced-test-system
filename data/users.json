@@ -6,7 +6,7 @@
     "password": "alice_pass",
     "is_active": true,
     "role": "Administrator",
-    "last_login": "2026-03-03T13:46:24.103045"
+    "last_login": "2026-03-04T11:23:21.139442"
   },
   {
     "id": 2,
@@ -22,9 +22,9 @@
     "get_full_name": "james",
     "email": "james@gmail.com",
     "password": "james_pass",
-    "is_active": false,
-    "role": "Administrator",
-    "last_login": null
+    "is_active": true,
+    "role": "Candidate",
+    "last_login": "2026-03-04T11:23:02.346754"
   },
   {
     "id": 4,
@@ -33,6 +33,15 @@
     "password": "goitseone_pass",
     "is_active": true,
     "role": "Candidate",
-    "last_login": "2026-03-03T13:38:55.750543"
+    "last_login": "2026-03-04T11:14:46.287494"
+  },
+  {
+    "id": 5,
+    "get_full_name": "Bob Lee",
+    "email": "bob@example.com",
+    "password": "12345",
+    "is_active": true,
+    "role": "Candidate",
+    "last_login": null
   }
 ]

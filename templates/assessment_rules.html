@@ -27,6 +27,13 @@
                 <li>For multiple choice, select the best answer</li>
                 <li>For short answer, provide detailed responses</li>
                 <li>Your score will be calculated after admin grading</li>
+                {% if assessment.allow_face_tracking %}
+                <li>Webcam monitoring will start once the assessment begins – keep your face visible and centered.</li>
+                {% endif %}
+                {% if assessment.allow_voice_tracking %}
+                <li>Microphone monitoring is active; please maintain a quiet environment.</li>
+                {% endif %}
+                <li>Copying, pasting or taking screenshots is disabled; any attempt will trigger a warning.</li>
             </ul>
         </div>
     </div>

@@ -2,6 +2,8 @@
 
 A comprehensive Flask-based assessment platform with admin and candidate interfaces. The system supports creating assessments with questions, candidates taking assessments, and admins grading with point allocation.
 
+> **Proctoring & security:** Web‑camera monitoring is enabled when candidates start an assessment; copying/pasting and screenshots are disabled. Two warnings (each costing 5% of the total) are issued before a third violation cancels the test.
+
 ---
 
 ## 🚀 Getting Started
@@ -133,6 +135,37 @@ advanced-test-system/
 
 ---
 
+<<<<<<< HEAD
+=======
+
+### 📋 Assessment Permissions
+
+When creating or editing an assessment the administrator can now configure additional
+rules:
+
+- **Allow back navigation** – prevents candidates from moving to previous
+  questions once they advance.
+- **Per-question timing** – splits the total duration evenly across questions and
+  enforces a countdown for each; the global timer is replaced.
+- **Face tracking** – enable/disable webcam monitoring (required for proctoring)
+  when the assessment is launched. Each time a candidate looks away this increments
+  a face-warning count.
+- **Voice tracking** – optionally request microphone access to watch for
+  excessive noise during the test. Loud sounds increment a separate voice-warning
+  counter.
+
+Warnings are tallyed separately and shown on both the candidate and admin
+reports; each warning (regardless of type) reduces the final score by 5%, and a
+combined total of more than two warnings cancels the assessment automatically.
+- **Assigned Candidates** – pick which users may see and take the assessment.
+  Previously assignments were managed separately; the form now includes a
+  checkbox list of all candidates.
+
+These settings are stored on the assessment object and are visible in the
+admin assessments table.
+
+## 🔄 Website Flow Diagram
+>>>>>>> 89adcf7 (update)
 
 
 ## 🎯 Key Features
@@ -172,7 +205,7 @@ advanced-test-system/
 | Route | Method | Purpose |
 |-------|--------|---------|
 | `/login` | GET, POST | User login with email & password |
-| `/logout` | GET | Clear session and logout |
+| `/logout` | GET | Clear session and logout (redirects to landing page) |
 
 ### Admin Routes
 | Route | Method | Purpose |

@@ -58,6 +58,9 @@ next_user_id = max((u.get('id', 0) for u in users), default=0) + 1
 
 assessments = load_from_file('assessments.json', [])
 
+# Load notifications
+notifications = load_from_file('notifications.json', [])
+
 # Migrate old assessment format to new format
 for assessment in assessments:
     if 'assigned_to' not in assessment:
@@ -66,12 +69,78 @@ for assessment in assessments:
         assessment['results'] = []
     if 'questions' not in assessment:
         assessment['questions'] = []
+    # new permission fields
+    if 'allow_back_navigation' not in assessment:
+        assessment['allow_back_navigation'] = True
+    if 'per_question_timer' not in assessment:
+        assessment['per_question_timer'] = False
+    if 'allow_face_tracking' not in assessment:
+        assessment['allow_face_tracking'] = True
+    if 'allow_voice_tracking' not in assessment:
+        assessment['allow_voice_tracking'] = False
+    # Ensure proctoring counts exist
+    if 'face_warnings' not in assessment:
+        # not stored at assessment level; but ensure results later
+        pass
     # Remove old fields for consistency
     assessment.pop('attempt_count', None)
     assessment.pop('assigned', None)
     assessment.pop('question_count', None)
 
 next_assessment_id = max((a.get('id', 0) for a in assessments), default=0) + 1
+
+
+# ============= NOTIFICATION HELPERS =============
+
+def create_notification(notification_type, user_id, title, message, related_assessment_id=None, related_candidate_id=None):
+    """
+    Create a notification for a user.
+    
+    Types:
+      - 'assessment_assigned': Test assigned to candidate
+      - 'assessment_submitted': Test submitted by candidate (for admin)
+      - 'assessment_graded': Test graded (for candidate)
+    """
+    notification = {
+        'id': len(notifications) + 1,
+        'type': notification_type,
+        'user_id': user_id,
+        'title': title,
+        'message': message,
+        'created_at': datetime.now().isoformat(),
+        'read': False,
+        'related_assessment_id': related_assessment_id,
+        'related_candidate_id': related_candidate_id,
+    }
+    notifications.append(notification)
+    save_to_file('notifications.json', notifications)
+    return notification
+
+
+def get_user_notifications(user_id, unread_only=False):
+    """Get notifications for a specific user."""
+    user_notifs = [n for n in notifications if n['user_id'] == user_id]
+    if unread_only:
+        user_notifs = [n for n in user_notifs if not n.get('read')]
+    # Sort by created_at descending
+    return sorted(user_notifs, key=lambda x: x['created_at'], reverse=True)
+
+
+def mark_notification_read(notification_id):
+    """Mark a notification as read."""
+    notif = next((n for n in notifications if n['id'] == notification_id), None)
+    if notif:
+        notif['read'] = True
+        save_to_file('notifications.json', notifications)
+        return True
+    return False
+
+
+def delete_notification(notification_id):
+    """Delete a notification."""
+    global notifications
+    notifications = [n for n in notifications if n['id'] != notification_id]
+    save_to_file('notifications.json', notifications)
 
 
 @app.route('/')
@@ -187,7 +256,120 @@ def admin_results():
 def admin_reports():
     if not require_login('Administrator'):
         return redirect(url_for('login'))
-    return render_template('admin_reports.html', active='reports')
+    # supply lists for filtering controls
+    candidate_users = [u for u in users if u['role'] == 'Candidate']
+    # compute summary statistics across all results
+    total_results = 0
+    passed = 0
+    failed = 0
+    scores = []
+    total_violations = 0
+    highest = None
+    lowest = None
+    for a in assessments:
+        for r in a.get('results', []):
+            if r.get('status') == 'completed' and r.get('score_percentage') is not None:
+                total_results += 1
+                scores.append(r['score_percentage'])
+                if r['score_percentage'] >= a.get('passing_score', 0):
+                    passed += 1
+                else:
+                    failed += 1
+                v = (r.get('face_warnings', 0) or 0) + (r.get('voice_warnings', 0) or 0)
+                total_violations += v
+                if highest is None or r['score_percentage'] > highest:
+                    highest = r['score_percentage']
+                if lowest is None or r['score_percentage'] < lowest:
+                    lowest = r['score_percentage']
+    avg_score = int(sum(scores)/len(scores)) if scores else 0
+    summary = {
+        'total_results': total_results,
+        'passed': passed,
+        'failed': failed,
+        'average_score': avg_score,
+        'highest': highest if highest is not None else 0,
+        'lowest': lowest if lowest is not None else 0,
+        'total_violations': total_violations,
+    }
+    return render_template(
+        'admin_reports.html',
+        active='reports',
+        assessments=assessments,
+        candidates=candidate_users,
+        summary=summary
+    )
+
+
+@app.route('/admin/reports/export', methods=['POST'])
+def export_reports():
+    if not require_login('Administrator'):
+        return redirect(url_for('login'))
+
+    # gather filters
+    aid = request.form.get('assessment_id')
+    cid = request.form.get('candidate_id')
+    start = request.form.get('start_date')
+    end = request.form.get('end_date')
+    min_w = request.form.get('min_warnings')
+    fmt = request.form.get('format', 'csv')
+
+    # convert
+    aid = int(aid) if aid else None
+    cid = int(cid) if cid else None
+    min_w = int(min_w) if min_w else 0
+
+    # build data rows
+    rows = []
+    for a in assessments:
+        if aid and a['id'] != aid:
+            continue
+        for r in a.get('results', []):
+            if cid and r['candidate_id'] != cid:
+                continue
+            # parse submitted date for range filtering
+            if r.get('submitted_date') and (start or end):
+                try:
+                    dt = datetime.fromisoformat(r['submitted_date'])
+                except Exception:
+                    dt = None
+                if dt and start and dt.date() < datetime.fromisoformat(start).date():
+                    continue
+                if dt and end and dt.date() > datetime.fromisoformat(end).date():
+                    continue
+            total_warn = (r.get('face_warnings', 0) or 0) + (r.get('voice_warnings', 0) or 0)
+            if total_warn < min_w:
+                continue
+            cand = next((u for u in users if u['id'] == r['candidate_id']), None)
+            rows.append({
+                'assessment': a['title'],
+                'candidate': cand['get_full_name'] if cand else 'Unknown',
+                'score': r.get('score_percentage'),
+                'submitted': r.get('submitted_date'),
+                'face_warnings': r.get('face_warnings', 0),
+                'voice_warnings': r.get('voice_warnings', 0),
+            })
+
+    # generate export content
+    if fmt == 'csv':
+        import csv, io
+        si = io.StringIO()
+        writer = csv.DictWriter(si, fieldnames=['assessment','candidate','score','submitted','face_warnings','voice_warnings'])
+        writer.writeheader()
+        writer.writerows(rows)
+        content = si.getvalue()
+        resp = app.response_class(content, mimetype='text/csv')
+        resp.headers['Content-Disposition'] = 'attachment; filename=report.csv'
+        return resp
+    elif fmt == 'pdf':
+        text = 'Assessment Report\n' + '\n'.join(str(r) for r in rows)
+        resp = app.response_class(text, mimetype='application/pdf')
+        resp.headers['Content-Disposition'] = 'attachment; filename=report.pdf'
+        return resp
+    else:  # doc
+        text = 'Assessment Report\n' + '\n'.join(str(r) for r in rows)
+        resp = app.response_class(text, mimetype='application/msword')
+        resp.headers['Content-Disposition'] = 'attachment; filename=report.doc'
+        return resp
 
 @app.route('/admin/security')
 def admin_security():
@@ -200,6 +382,75 @@ def admin_settings():
     if not require_login('Administrator'):
         return redirect(url_for('login'))
     return render_template('admin_settings.html', active='settings')
+
+
+# ============= ADMIN NOTIFICATION ROUTES =============
+
+@app.route('/admin/notifications')
+def admin_notifications():
+    """Admin notifications page"""
+    if not require_login('Administrator'):
+        return redirect(url_for('login'))
+    
+    admin_id = session.get('user_id')
+    user_notifs = get_user_notifications(admin_id)
+    unread_count = len([n for n in user_notifs if not n.get('read')])
+    
+    return render_template(
+        'admin_notifications.html',
+        active='notifications',
+        notifications=user_notifs,
+        unread_count=unread_count
+    )
+
+
+@app.route('/admin/notifications/<int:notification_id>/read', methods=['POST'])
+def mark_notification_read_route(notification_id):
+    """Mark a notification as read"""
+    if not require_login('Administrator'):
+        return {'error': 'not logged in'}, 403
+    
+    success = mark_notification_read(notification_id)
+    return {'success': success}, 200 if success else 404
+
+
+@app.route('/admin/notifications/<int:notification_id>', methods=['DELETE'])
+def delete_notification_route(notification_id):
+    """Delete a notification"""
+    if not require_login('Administrator'):
+        return {'error': 'not logged in'}, 403
+    
+    delete_notification(notification_id)
+    return {'success': True}, 200
+
+
+@app.route('/admin/notifications/mark-all-read', methods=['POST'])
+def mark_all_notifications_read():
+    """Mark all notifications as read for the admin"""
+    if not require_login('Administrator'):
+        return {'error': 'not logged in'}, 403
+    
+    admin_id = session.get('user_id')
+    for notif in get_user_notifications(admin_id):
+        mark_notification_read(notif['id'])
+    
+    return {'success': True}, 200
+
+
+@app.route('/admin/notifications/clear-all', methods=['DELETE'])
+def clear_all_notifications():
+    """Delete all notifications for the admin"""
+    if not require_login('Administrator'):
+        return {'error': 'not logged in'}, 403
+    
+    global notifications
+    admin_id = session.get('user_id')
+    initial_count = len(notifications)
+    notifications = [n for n in notifications if n['user_id'] != admin_id]
+    save_to_file('notifications.json', notifications)
+    
+    return {'success': True, 'deleted': initial_count - len(notifications)}, 200
+
 
 # placeholders for user/assessment management links on overview
 @app.route('/admin/users/add', methods=['GET', 'POST'])
@@ -267,6 +518,11 @@ def create_assessment():
         duration = int(request.form.get('duration', '0') or 0)
         passing_score = int(request.form.get('passing_score', '0') or 0)
         is_published = bool(request.form.get('is_published'))
+        allow_back = bool(request.form.get('allow_back_navigation'))
+        per_q_timer = bool(request.form.get('per_question_timer'))
+        face_track = bool(request.form.get('allow_face_tracking'))
+        voice_track = bool(request.form.get('allow_voice_tracking'))
+        assigned = [int(uid) for uid in request.form.getlist('assigned_to') if uid]
 
         new_assessment = {
             'id': next_assessment_id,
@@ -275,18 +531,37 @@ def create_assessment():
             'duration': duration,
             'passing_score': passing_score,
             'is_published': is_published,
-            'assigned_to': [],
+            'allow_back_navigation': allow_back,
+            'per_question_timer': per_q_timer,
+            'allow_face_tracking': face_track,
+            'allow_voice_tracking': voice_track,
+            'assigned_to': assigned,
             'questions': [],
             'results': [],
         }
         assessments.append(new_assessment)
         next_assessment_id += 1
         save_to_file('assessments.json', assessments)
+        
+        # Send notifications to assigned candidates
+        if assigned:
+            for candidate_id in assigned:
+                candidate = next((u for u in users if u['id'] == candidate_id), None)
+                if candidate:
+                    create_notification(
+                        notification_type='assessment_assigned',
+                        user_id=candidate_id,
+                        title=f'New Assessment Assigned: {title}',
+                        message=f'You have been assigned a new assessment: "{title}". Please review it in your dashboard.',
+                        related_assessment_id=new_assessment['id']
+                    )
 
         flash(f'Assessment "{title}" created successfully.', 'success')
         return redirect(url_for('admin_assessments'))
 
-    return render_template('assessment_form.html', action='create', assessment={})
+    # pass candidate list for assigning
+    candidate_users = [u for u in users if u['role'] == 'Candidate']
+    return render_template('assessment_form.html', action='create', assessment={}, users=candidate_users)
 
 @app.route('/admin/assessments/<int:assessment_id>/edit', methods=['GET', 'POST'])
 def edit_assessment(assessment_id):
@@ -304,6 +579,17 @@ def edit_assessment(assessment_id):
         assessment['duration'] = int(request.form.get('duration', assessment.get('duration', 0)) or 0)
         assessment['passing_score'] = int(request.form.get('passing_score', assessment.get('passing_score', 0)) or 0)
         assessment['is_published'] = bool(request.form.get('is_published'))
+        assessment['allow_back_navigation'] = bool(request.form.get('allow_back_navigation'))
+        assessment['per_question_timer'] = bool(request.form.get('per_question_timer'))
+        assessment['allow_face_tracking'] = bool(request.form.get('allow_face_tracking'))
+        assessment['allow_voice_tracking'] = bool(request.form.get('allow_voice_tracking'))
+        
+        # Track which candidates are newly assigned
+        old_assigned = set(assessment.get('assigned_to', []))
+        new_assigned = set([int(uid) for uid in request.form.getlist('assigned_to') if uid])
+        newly_assigned = new_assigned - old_assigned
+        
+        assessment['assigned_to'] = list(new_assigned)
         
         # Ensure required fields exist
         if 'assigned_to' not in assessment:
@@ -314,11 +600,24 @@ def edit_assessment(assessment_id):
             assessment['questions'] = []
         
         save_to_file('assessments.json', assessments)
+        
+        # Send notifications to newly assigned candidates
+        for candidate_id in newly_assigned:
+            candidate = next((u for u in users if u['id'] == candidate_id), None)
+            if candidate:
+                create_notification(
+                    notification_type='assessment_assigned',
+                    user_id=candidate_id,
+                    title=f'New Assessment Assigned: {assessment["title"]}',
+                    message=f'You have been assigned a new assessment: "{assessment["title"]}". Please review it in your dashboard.',
+                    related_assessment_id=assessment_id
+                )
 
         flash(f'Assessment "{assessment["title"]}" updated successfully.', 'success')
         return redirect(url_for('admin_assessments'))
 
-    return render_template('assessment_form.html', action='edit', assessment=assessment)
+    candidate_users = [u for u in users if u['role'] == 'Candidate']
+    return render_template('assessment_form.html', action='edit', assessment=assessment, users=candidate_users)
 
 # Helper function to check login
 def require_login(required_role=None):
@@ -440,29 +739,59 @@ def candidate_notifications():
         return redirect(url_for('login'))
     
     candidate_id = session.get('user_id')
-    cand_assessments = get_candidate_assessments(candidate_id)
     
-    # Generate notifications: upcoming deadlines, pending assessments, etc.
-    notifications = []
+    # Get notifications from the system
+    system_notifications = get_user_notifications(candidate_id)
+    
+    # Get assessment-related notifications
+    cand_assessments = get_candidate_assessments(candidate_id)
+    assessment_notifications = []
     
     for ca in cand_assessments:
         if ca['result'].get('status') == 'not_started' and ca['result'].get('due_date'):
-            notifications.append({
+            assessment_notifications.append({
                 'type': 'pending',
+                'title': f"Pending: {ca['assessment']['title']}",
                 'message': f"You have a pending assessment: {ca['assessment']['title']}",
-                'date': ca['result']['due_date']
+                'date': ca['result']['due_date'],
+                'read': True,
+                'source': 'assessment'
             })
         elif ca['result'].get('status') == 'in_progress':
-            notifications.append({
+            assessment_notifications.append({
                 'type': 'in_progress',
+                'title': f"In Progress: {ca['assessment']['title']}",
                 'message': f"Resume your assessment: {ca['assessment']['title']}",
-                'date': ca['result']['due_date']
+                'date': ca['result']['due_date'],
+                'read': True,
+                'source': 'assessment'
             })
+    
+    # Combine and sort all notifications
+    all_notifications = []
+    
+    # Add system notifications
+    for notif in system_notifications:
+        all_notifications.append({
+            'id': notif['id'],
+            'type': notif['type'],
+            'title': notif['title'],
+            'message': notif['message'],
+            'date': notif['created_at'],
+            'read': notif.get('read', False),
+            'source': 'system'
+        })
+    
+    # Add assessment notifications
+    all_notifications.extend(assessment_notifications)
+    
+    # Sort by date descending
+    all_notifications = sorted(all_notifications, key=lambda x: x['date'], reverse=True)
     
     return render_template(
         'candidate_notifications.html',
         active='notifications',
-        notifications=notifications
+        notifications=all_notifications
     )
 
 
@@ -519,9 +848,12 @@ def delete_user(user_id):
 
 @app.route('/logout')
 def logout():
+    # Clear all session data to fully log the user out
     session.clear()
     flash('You have been logged out.', 'info')
-    return redirect(url_for('login'))
+    # After logging out redirect to the landing page (index) rather than the
+    # login form so the user ends up at the site front‑page.
+    return redirect(url_for('index'))
 
 
 # Assessment Question Management Routes
@@ -605,11 +937,20 @@ def take_assessment(assessment_id):
             'allocated_points': None,
             'passed': None,
             'time_spent': 0,
-            'due_date': None
+            'due_date': None,
+            # proctoring fields
+            'face_warnings': 0,          # how many times face moved away
+            'voice_warnings': 0,         # how many noise reprimands
+            'cancelled': False           # whether the exam has been cancelled
         }
         assessment.get('results', []).append(result)
         save_to_file('assessments.json', assessments)
     
+    # if assessment has been cancelled for rules violations, kick user back
+    if result.get('status') == 'cancelled' or result.get('cancelled'):
+        flash('This assessment has been cancelled due to rule violations.', 'danger')
+        return redirect(url_for('candidate_assessments'))
+
     # If assessment is already completed, show results instead
     if result.get('status') == 'completed':
         return render_template('assessment_results.html', assessment=assessment, result=result)
@@ -629,6 +970,9 @@ def take_assessment(assessment_id):
         # User clicked "Start Assessment" - mark as in_progress and show the assessment form
         result['status'] = 'in_progress'
         result['start_date'] = datetime.now().isoformat()
+        # reset warnings when the candidate begins
+        result['face_warnings'] = 0
+        result['cancelled'] = False
         save_to_file('assessments.json', assessments)
         return render_template('take_assessment.html', assessment=assessment, result=result)
     
@@ -659,6 +1003,22 @@ def take_assessment(assessment_id):
     result['time_spent'] = int(request.form.get('time_spent', '0') or 0)
     
     save_to_file('assessments.json', assessments)
+    
+    # Send notification to all admins when assessment is submitted
+    candidate = next((u for u in users if u['id'] == candidate_id), None)
+    candidate_name = candidate['get_full_name'] if candidate else f'Candidate #{candidate_id}'
+    admin_users = [u for u in users if u['role'] == 'Administrator']
+    
+    for admin in admin_users:
+        create_notification(
+            notification_type='assessment_submitted',
+            user_id=admin['id'],
+            title=f'Assessment Submitted: {assessment["title"]}',
+            message=f'{candidate_name} has submitted the assessment "{assessment["title"]}" and is waiting for grading.',
+            related_assessment_id=assessment_id,
+            related_candidate_id=candidate_id
+        )
+    
     flash('Assessment submitted successfully. Waiting for admin to grade.', 'success')
     return redirect(url_for('candidate_assessments'))
 
@@ -698,6 +1058,14 @@ def grade_assessment(assessment_id, candidate_id):
         score_percentage = int((total_points / max_points * 100)) if max_points > 0 else 0
         
         result['total_score'] = total_points
+        # deduct 5% for each warning (face or voice), up to 2 total
+        face = result.get('face_warnings', 0) or 0
+        voice = result.get('voice_warnings', 0) or 0
+        total_warn = face + voice
+        deduction = min(total_warn, 2) * 5
+        if deduction:
+            score_percentage = max(score_percentage - deduction, 0)
+            result['deduction_percentage'] = deduction
         result['score_percentage'] = score_percentage
         result['passed'] = score_percentage >= assessment.get('passing_score', 70)
         result['status'] = 'completed'
@@ -712,6 +1080,64 @@ def grade_assessment(assessment_id, candidate_id):
                          assessment=assessment, 
                          result=result, 
                          candidate=candidate)
+
+
+
+# new endpoint for recording proctoring warnings
+@app.route('/candidate/assessments/<int:assessment_id>/warning', methods=['POST'])
+def record_warning(assessment_id):
+    """AJAX handler for proctoring warnings.
+
+    The POST body may include a JSON field ``reason`` with values
+    ``"face"`` or ``"voice"``; defaults to ``"face"``.  Each warning
+    increments the corresponding counter.  A total of more than two
+    combined warnings (face + voice) will cancel the assessment.
+    """
+    if not require_login('Candidate'):
+        return json.dumps({'error': 'not logged in'}), 403
+    candidate_id = session.get('user_id')
+    assessment = next((a for a in assessments if a['id'] == assessment_id), None)
+    if not assessment:
+        return json.dumps({'error': 'assessment not found'}), 404
+    result = next((r for r in assessment.get('results', []) if r['candidate_id'] == candidate_id), None)
+    if not result or result.get('status') != 'in_progress':
+        return json.dumps({'error': 'not in progress'}), 400
+
+    data = {}
+    try:
+        data = request.get_json() or {}
+    except Exception:
+        pass
+    reason = data.get('reason', 'face')
+
+    if reason == 'voice':
+        result['voice_warnings'] = result.get('voice_warnings', 0) + 1
+        count = result['voice_warnings']
+    else:
+        result['face_warnings'] = result.get('face_warnings', 0) + 1
+        count = result['face_warnings']
+
+    # compute combined total
+    total_warnings = (result.get('face_warnings', 0) or 0) + (result.get('voice_warnings', 0) or 0)
+    save_to_file('assessments.json', assessments)
+
+    if total_warnings > 2:
+        result['status'] = 'cancelled'
+        result['cancelled'] = True
+        save_to_file('assessments.json', assessments)
+        return json.dumps({'cancelled': True}), 200
+
+    return json.dumps({'reason': reason, 'count': count, 'total': total_warnings}), 200
+
+
+# prevent browsers from caching sensitive pages so that hitting the back
+# button after logging out doesn't display stale content
+@app.after_request
+def add_no_cache_headers(response):
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 
 if __name__ == '__main__':

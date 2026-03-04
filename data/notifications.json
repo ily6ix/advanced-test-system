@@ -1,0 +1,68 @@
+[
+  {
+    "id": 1,
+    "type": "assessment_assigned",
+    "user_id": 4,
+    "title": "New Assessment Assigned: test2",
+    "message": "You have been assigned a new assessment: \"test2\". Please review it in your dashboard.",
+    "created_at": "2026-03-04T11:12:04.876933",
+    "read": false,
+    "related_assessment_id": 5,
+    "related_candidate_id": null
+  },
+  {
+    "id": 2,
+    "type": "assessment_submitted",
+    "user_id": 1,
+    "title": "Assessment Submitted: test2",
+    "message": "goitseone has submitted the assessment \"test2\" and is waiting for grading.",
+    "created_at": "2026-03-04T11:15:08.053535",
+    "read": false,
+    "related_assessment_id": 5,
+    "related_candidate_id": 4
+  },
+  {
+    "id": 3,
+    "type": "assessment_submitted",
+    "user_id": 3,
+    "title": "Assessment Submitted: test2",
+    "message": "goitseone has submitted the assessment \"test2\" and is waiting for grading.",
+    "created_at": "2026-03-04T11:15:08.053776",
+    "read": false,
+    "related_assessment_id": 5,
+    "related_candidate_id": 4
+  },
+  {
+    "id": 4,
+    "type": "assessment_assigned",
+    "user_id": 5,
+    "title": "New Assessment Assigned: Intro to Python",
+    "message": "You have been assigned a new assessment: \"Intro to Python\". Please review it in your dashboard.",
+    "created_at": "2026-03-04T11:17:47.752135",
+    "read": false,
+    "related_assessment_id": 1,
+    "related_candidate_id": null
+  },
+  {
+    "id": 5,
+    "type": "assessment_assigned",
+    "user_id": 3,
+    "title": "New Assessment Assigned: Intro to Python",
+    "message": "You have been assigned a new assessment: \"Intro to Python\". Please review it in your dashboard.",
+    "created_at": "2026-03-04T11:22:20.174817",
+    "read": false,
+    "related_assessment_id": 1,
+    "related_candidate_id": null
+  },
+  {
+    "id": 6,
+    "type": "assessment_submitted",
+    "user_id": 1,
+    "title": "Assessment Submitted: Intro to Python",
+    "message": "james has submitted the assessment \"Intro to Python\" and is waiting for grading.",
+    "created_at": "2026-03-04T11:22:56.409982",
+    "read": false,
+    "related_assessment_id": 1,
+    "related_candidate_id": 3
+  }
+]

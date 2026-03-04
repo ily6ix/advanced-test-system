@@ -2,23 +2,73 @@
 
 {% block content %}
     <h2>Notifications</h2>
-    <p>Recent updates related to your account.</p>
+    <p>Your recent notifications and assessment updates.</p>
 
     {% if notifications %}
-        <ul style="list-style: none; padding: 0;">
+        <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
             {% for notification in notifications %}
-                <li style="padding: 1rem; margin-bottom: 0.5rem; border-left: 4px solid {% if notification.type == 'pending' %}#ff9800{% elif notification.type == 'in_progress' %}#2196F3{% else %}#4CAF50{% endif %}; background: #f9f9f9; border-radius: 4px;">
-                    <strong>{{ notification.message }}</strong>
-                    <br>
-                    <small style="color: #666;">
-                        {% if notification.date %}
-                            Due: {{ notification.date | replace('T', ' ') | truncate(10, True, '') }}
+                <div style="
+                    padding: 1.5rem;
+                    border-bottom: 1px solid #e5e7eb;
+                    display: flex;
+                    gap: 1rem;
+                    align-items: flex-start;
+                    {% if not notification.read %}background: #f0f4ff;{% endif %}
+                ">
+                    <div style="
+                        width: 4px;
+                        height: 4px;
+                        border-radius: 50%;
+                        margin-top: 0.5rem;
+                        {% if notification.type == 'pending' or notification.type == 'assessment_assigned' %}
+                            background: #ff9800;
+                        {% elif notification.type == 'in_progress' %}
+                            background: #2196F3;
+                        {% elif notification.type == 'assessment_submitted' %}
+                            background: #4CAF50;
+                        {% else %}
+                            background: #9ca3af;
                         {% endif %}
-                    </small>
-                </li>
+                    "></div>
+                    <div style="flex: 1;">
+                        <strong style="
+                            color: #1f2937;
+                            display: block;
+                            margin-bottom: 0.25rem;
+                        ">{{ notification.title }}</strong>
+                        <p style="
+                            color: #6b7280;
+                            margin: 0.5rem 0 0 0;
+                            font-size: 0.95rem;
+                        ">{{ notification.message }}</p>
+                        <small style="color: #9ca3af; display: block; margin-top: 0.5rem;">
+                            {{ notification.date|replace('T', ' ')|truncate(19, True, '') }}
+                        </small>
+                    </div>
+                    {% if notification.source == 'system' and not notification.read %}
+                        <span style="
+                            display: inline-block;
+                            width: 8px;
+                            height: 8px;
+                            background: #1f4ed8;
+                            border-radius: 50%;
+                            margin-top: 0.5rem;
+                        "></span>
+                    {% endif %}
+                </div>
             {% endfor %}
-        </ul>
+        </div>
     {% else %}
-        <p style="color: #999; font-style: italic;">No new notifications.</p>
+        <div style="
+            text-align: center;
+            padding: 3rem 2rem;
+            background: white;
+            border-radius: 12px;
+            color: #9ca3af;
+        ">
+            <i class="fas fa-bell-slash" style="font-size: 2.5rem; margin-bottom: 1rem; display: block;"></i>
+            <p style="font-style: italic; margin: 0;">No new notifications.</p>
+            <small style="display: block; margin-top: 0.5rem;">You're all caught up!</small>
+        </div>
     {% endif %}
 {% endblock %}

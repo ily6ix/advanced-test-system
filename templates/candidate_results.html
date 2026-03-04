@@ -12,6 +12,7 @@
                 <th>Score</th>
                 <th>Status</th>
                 <th>Passing Score</th>
+                <th>Warnings</th>
                 <th>Date Completed</th>
             </tr>
         </thead>
@@ -22,6 +23,9 @@
                         <td><strong>{{ ca.assessment.title }}</strong></td>
                         <td>
                             <strong>{{ ca.result.score_percentage }}%</strong>
+                            {% if ca.result.deduction_percentage %}
+                                <br><small style="color:#d32f2f;">(-{{ ca.result.deduction_percentage }}% penalty)</small>
+                            {% endif %}
                         </td>
                         <td>
                             {% if ca.result.passed %}
@@ -31,6 +35,7 @@
                             {% endif %}
                         </td>
                         <td>{{ ca.assessment.passing_score }}%</td>
+                        <td>{{ ca.result.face_warnings or 0 }} / {{ ca.result.voice_warnings or 0 }}</td>
                         <td>
                             {% if ca.result.submitted_date %}
                                 {{ ca.result.submitted_date | replace('T', ' ') | truncate(19, True, '') }}

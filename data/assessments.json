@@ -7,7 +7,9 @@
     "passing_score": 70,
     "is_published": true,
     "assigned_to": [
-      4
+      3,
+      4,
+      5
     ],
     "questions": [
       {
@@ -75,8 +77,47 @@
         "graded_by_admin": 1,
         "graded_date": "2026-03-03T13:45:01.570177",
         "start_date": "2026-03-03T13:41:10.997745"
+      },
+      {
+        "candidate_id": 3,
+        "status": "submitted",
+        "answers": [
+          {
+            "question_id": 1,
+            "candidate_answer": "0",
+            "allocated_points": null,
+            "graded": false
+          },
+          {
+            "question_id": 2,
+            "candidate_answer": "0",
+            "allocated_points": null,
+            "graded": false
+          },
+          {
+            "question_id": 3,
+            "candidate_answer": "00",
+            "allocated_points": null,
+            "graded": false
+          }
+        ],
+        "submitted_date": "2026-03-04T11:22:56.409206",
+        "graded_date": null,
+        "score_percentage": null,
+        "allocated_points": null,
+        "passed": null,
+        "time_spent": 6,
+        "due_date": null,
+        "face_warnings": 0,
+        "voice_warnings": 0,
+        "cancelled": false,
+        "start_date": "2026-03-04T11:22:46.680564"
       }
-    ]
+    ],
+    "allow_back_navigation": true,
+    "per_question_timer": false,
+    "allow_face_tracking": true,
+    "allow_voice_tracking": false
   },
   {
     "id": 2,
@@ -106,18 +147,30 @@
     "results": [
       {
         "candidate_id": 4,
-        "status": "not_started",
-        "submitted_date": null,
-        "time_spent": 0,
-        "answers": [],
-        "total_score": null,
-        "score_percentage": null,
-        "passed": null,
-        "graded_by_admin": null,
-        "graded_date": null,
-        "due_date": "2026-03-05T23:59:59"
+        "status": "completed",
+        "submitted_date": "2026-03-03T18:14:44.474548",
+        "time_spent": 53,
+        "answers": [
+          {
+            "question_id": 1,
+            "candidate_answer": "0",
+            "allocated_points": 5,
+            "graded": true
+          }
+        ],
+        "total_score": 5,
+        "score_percentage": 100,
+        "passed": true,
+        "graded_by_admin": 1,
+        "graded_date": "2026-03-03T18:16:08.231973",
+        "due_date": "2026-03-05T23:59:59",
+        "start_date": "2026-03-03T18:13:47.685567"
       }
-    ]
+    ],
+    "allow_back_navigation": true,
+    "per_question_timer": false,
+    "allow_face_tracking": true,
+    "allow_voice_tracking": false
   },
   {
     "id": 3,
@@ -147,24 +200,126 @@
     "results": [
       {
         "candidate_id": 4,
-        "status": "in_progress",
-        "submitted_date": null,
-        "time_spent": 30,
+        "status": "completed",
+        "submitted_date": "2026-03-04T07:07:38.020736",
+        "time_spent": 10,
         "answers": [
           {
             "question_id": 1,
-            "candidate_answer": 2,
+            "candidate_answer": "1",
+            "allocated_points": 10,
+            "graded": true
+          }
+        ],
+        "total_score": 10,
+        "score_percentage": 100,
+        "passed": true,
+        "graded_by_admin": 1,
+        "graded_date": "2026-03-04T08:31:41.414342",
+        "due_date": "2026-03-05T23:59:59",
+        "progress": 33,
+        "start_date": "2026-03-04T07:07:24.209725"
+      }
+    ],
+    "allow_back_navigation": true,
+    "per_question_timer": false,
+    "allow_face_tracking": true,
+    "allow_voice_tracking": false
+  },
+  {
+    "id": 4,
+    "title": "Test Assessment",
+    "description": "testing assessment anti-fraud-system",
+    "duration": 10,
+    "passing_score": 100,
+    "is_published": true,
+    "assigned_to": [
+      4
+    ],
+    "questions": [
+      {
+        "id": 1,
+        "text": "what is your name",
+        "type": "short_answer",
+        "points": 10
+      }
+    ],
+    "results": [
+      {
+        "candidate_id": 4,
+        "status": "completed",
+        "answers": [
+          {
+            "question_id": 1,
+            "candidate_answer": "Goitseone",
+            "allocated_points": 10,
+            "graded": true
+          }
+        ],
+        "submitted_date": "2026-03-04T08:23:43.693684",
+        "graded_date": "2026-03-04T08:24:59.252047",
+        "score_percentage": 100,
+        "allocated_points": null,
+        "passed": true,
+        "time_spent": 16,
+        "due_date": null,
+        "face_warnings": 0,
+        "cancelled": false,
+        "start_date": "2026-03-04T08:23:25.040808",
+        "total_score": 10,
+        "graded_by_admin": 1
+      }
+    ],
+    "allow_back_navigation": true,
+    "per_question_timer": false,
+    "allow_face_tracking": true,
+    "allow_voice_tracking": true
+  },
+  {
+    "id": 5,
+    "title": "test2",
+    "description": "tesing notification pdate",
+    "duration": 21,
+    "passing_score": 50,
+    "is_published": true,
+    "allow_back_navigation": true,
+    "per_question_timer": false,
+    "allow_face_tracking": false,
+    "allow_voice_tracking": false,
+    "assigned_to": [
+      4
+    ],
+    "questions": [
+      {
+        "id": 1,
+        "text": "test1",
+        "type": "short_answer",
+        "points": 10
+      }
+    ],
+    "results": [
+      {
+        "candidate_id": 4,
+        "status": "submitted",
+        "answers": [
+          {
+            "question_id": 1,
+            "candidate_answer": "qq",
             "allocated_points": null,
             "graded": false
           }
         ],
-        "total_score": null,
-        "score_percentage": null,
-        "passed": null,
-        "graded_by_admin": null,
+        "submitted_date": "2026-03-04T11:15:08.052812",
         "graded_date": null,
-        "due_date": "2026-03-05T23:59:59",
-        "progress": 33
+        "score_percentage": null,
+        "allocated_points": null,
+        "passed": null,
+        "time_spent": 3,
+        "due_date": null,
+        "face_warnings": 0,
+        "voice_warnings": 0,
+        "cancelled": false,
+        "start_date": "2026-03-04T11:15:01.567197"
       }
     ]
   }

@@ -12,6 +12,7 @@
                 <th>Description</th>
                 <th>Duration</th>
                 <th>Status</th>
+                <th>Warnings</th>
                 <th>Due</th>
                 <th>Action</th>
             </tr>
@@ -26,6 +27,8 @@
                         <td>
                             {% if ca.result.status == 'completed' %}
                                 <span class="status completed">Completed ({{ ca.result.score_percentage }}%)</span>
+                            {% elif ca.result.status == 'cancelled' %}
+                                <span class="status not-started">Cancelled</span>
                             {% elif ca.result.status == 'submitted' %}
                                 <span class="status pending">Submitted (Awaiting Grade)</span>
                             {% elif ca.result.status == 'in_progress' %}
@@ -33,6 +36,9 @@
                             {% else %}
                                 <span class="status not-started">Not Started</span>
                             {% endif %}
+                        </td>
+                        <td>
+                            {{ ca.result.face_warnings or 0 }} / {{ ca.result.voice_warnings or 0 }}
                         </td>
                         <td>
                             {% if ca.result.due_date %}
@@ -48,6 +54,8 @@
                                 <button class="btn btn-secondary" disabled style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Pending</button>
                             {% elif ca.result.status == 'in_progress' %}
                                 <a href="{{ url_for('take_assessment', assessment_id=ca.assessment.id) }}" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Resume</a>
+                            {% elif ca.result.status == 'cancelled' %}
+                                <button class="btn btn-danger" disabled style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Cancelled</button>
                             {% else %}
                                 <a href="{{ url_for('take_assessment', assessment_id=ca.assessment.id) }}" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Start</a>
                             {% endif %}

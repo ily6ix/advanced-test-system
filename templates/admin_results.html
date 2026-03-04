@@ -17,6 +17,7 @@
                     <th>Candidate</th>
                     <th>Submitted</th>
                     <th>Time Spent</th>
+                    <th>Warnings (face/voice)</th>
                     <th>Status</th>
                     <th>Action</th>
                 </tr>
@@ -39,6 +40,7 @@
                             <td>{{ item.candidate.get_full_name }} ({{ item.candidate.email }})</td>
                             <td>{{ item.result.submitted_date | replace('T', ' ') | truncate(19, True, '') if item.result.submitted_date else '—' }}</td>
                             <td>{{ item.result.time_spent }} min</td>
+                            <td>{{ item.result.face_warnings or 0 }} / {{ item.result.voice_warnings or 0 }}</td>
                             <td><span class="status pending">Awaiting Grading</span></td>
                             <td>
                                 <a href="{{ url_for('grade_assessment', assessment_id=item.assessment.id, candidate_id=item.candidate.id) }}" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Grade</a>
@@ -66,6 +68,7 @@
                     <th>Assessment</th>
                     <th>Candidate</th>
                     <th>Score</th>
+                    <th>Warnings (face/voice)</th>
                     <th>Status</th>
                     <th>Graded Date</th>
                 </tr>
@@ -87,6 +90,7 @@
                             <td>{{ item.assessment.title }}</td>
                             <td>{{ item.candidate.get_full_name }} ({{ item.candidate.email }})</td>
                             <td><strong>{{ item.result.score_percentage }}%</strong></td>
+                            <td>{{ item.result.face_warnings or 0 }} / {{ item.result.voice_warnings or 0 }}</td>
                             <td>
                                 {% if item.result.passed %}
                                     <span class="status completed">Passed</span>

@@ -17,7 +17,7 @@
     <!-- Timer & Instructions -->
     <div style="background: #fff3e0; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
         <div>
-            <strong>⏱️ Timer:</strong> <span id="timer" style="color: #d32f2f; font-weight: bold; font-size: 1.2rem;">{{ assessment.duration }}:00</span> remaining
+            <strong class="timer-label">⏱️ Timer:</strong> <span id="timer" style="color: #d32f2f; font-weight: bold; font-size: 1.2rem;">{{ assessment.duration }}:00</span> remaining
         </div>
         <div style="text-align: right;">
             <strong>Remember:</strong> You must answer all questions before submitting. Your answers will be sent for grading.
@@ -26,6 +26,8 @@
 
     <form method="post" id="assessment_form" style="background: white; padding: 2rem; border-radius: 10px; border: 1px solid #e0e0e0;">
         <input type="hidden" name="time_spent" id="time_spent" value="0">
+        <!-- hidden video element used for face tracking -->
+        <video id="proctor_video" autoplay muted playsinline style="display:none;"></video>
 
         {% if assessment.questions %}
             {% for question in assessment.questions %}
@@ -93,72 +95,144 @@
 </section>
 
 <script>
-    // Track time spent on assessment
+    // ------------ permissions & environment ----------------
+    const allowBack = {{ 'true' if assessment.allow_back_navigation else 'false' }};
+    const perQuestionTimer = {{ 'true' if assessment.per_question_timer else 'false' }};
+    const allowFace = {{ 'true' if assessment.allow_face_tracking else 'false' }};
+    const allowVoice = {{ 'true' if assessment.allow_voice_tracking else 'false' }};
     let startTime = Date.now();
-    let timerInterval;
+    let timerInterval, questionTimerInterval;
     let totalMinutes = {{ assessment.duration }};
     let totalSeconds = totalMinutes * 60;
-    
-    // Timer countdown
+    const questionCount = {{ assessment.questions|length }};
+    const perQuestionSeconds = questionCount>0 ? Math.floor(totalSeconds / questionCount) : 0;
+    let currentIndex = 0;
+
+    const questions = document.querySelectorAll('.question_item');
+
+    function formatTime(sec) {
+        const m = Math.floor(sec/60);
+        const s = sec % 60;
+        return m + ':' + (s<10? '0':'') + s;
+    }
+
+    function showQuestion(idx) {
+        questions.forEach((q,i) => q.style.display = i===idx ? 'block' : 'none');
+        currentIndex = idx;
+        updateNavButtons();
+        updateProgress();
+        if (perQuestionTimer) startQuestionTimer();
+    }
+
+    function updateNavButtons() {
+        const prev = document.getElementById('prev-question');
+        const next = document.getElementById('next-question');
+        if (prev) {
+            prev.style.display = (!allowBack || currentIndex === 0) ? 'none' : 'inline-block';
+        }
+        if (next) {
+            next.style.display = (currentIndex === questions.length - 1) ? 'none' : 'inline-block';
+        }
+    }
+
+    function nextQuestion() {
+        if (currentIndex < questions.length - 1) {
+            showQuestion(currentIndex + 1);
+        }
+    }
+    function prevQuestion() {
+        if (allowBack && currentIndex > 0) {
+            showQuestion(currentIndex - 1);
+        }
+    }
+
+    function startQuestionTimer() {
+        clearInterval(questionTimerInterval);
+        let remaining = perQuestionSeconds;
+        document.getElementById('timer').textContent = formatTime(remaining);
+        questionTimerInterval = setInterval(() => {
+            remaining--;
+            if (remaining <= 0) {
+                clearInterval(questionTimerInterval);
+                if (currentIndex === questions.length - 1) {
+                    alert('Time is up for last question, submitting.');
+                    document.getElementById('assessment_form').submit();
+                } else {
+                    alert('Time is up for this question, moving to next.');
+                    nextQuestion();
+                }
+            } else {
+                document.getElementById('timer').textContent = formatTime(remaining);
+            }
+        }, 1000);
+    }
+
     function updateTimer() {
         let timeSpent = Math.floor((Date.now() - startTime) / 1000);
         let timeRemaining = totalSeconds - timeSpent;
-        
         if (timeRemaining <= 0) {
             clearInterval(timerInterval);
             alert('Time is up! Your assessment will be automatically submitted.');
             document.getElementById('assessment_form').submit();
         }
-        
         let minutes = Math.floor(timeRemaining / 60);
         let seconds = timeRemaining % 60;
         document.getElementById('timer').textContent = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
-        
-        // Red warning when less than 5 minutes
         if (timeRemaining < 300) {
             document.getElementById('timer').style.color = '#d32f2f';
         }
-        
         document.getElementById('time_spent').value = timeSpent;
     }
-    
-    timerInterval = setInterval(updateTimer, 1000);
-    updateTimer(); // Initial call
-    
-    // Track progress (questions answered)
+
     function updateProgress() {
-        let answeredCount = 0;
-        document.querySelectorAll('.question_input:checked, .question_input[type="textarea"]').forEach(el => {
-            if (el.type === 'radio' && el.checked) {
-                answeredCount++;
-            } else if (el.type === 'textarea' && el.value.trim()) {
-                answeredCount++;
-            }
-        });
-        document.getElementById('progress_display').textContent = answeredCount + ' / {{ assessment.questions|length }} answered';
+        if (perQuestionTimer) {
+            document.getElementById('progress_display').textContent = (currentIndex+1) + ' / ' + questions.length + ' questions';
+        } else {
+            let answeredCount = 0;
+            document.querySelectorAll('.question_input:checked, .question_input[type="textarea"]').forEach(el => {
+                if (el.type === 'radio' && el.checked) answeredCount++;
+                else if (el.type === 'textarea' && el.value.trim()) answeredCount++;
+            });
+            document.getElementById('progress_display').textContent = answeredCount + ' / ' + questions.length + ' answered';
+        }
     }
-    
-    // Better progress tracking
-    function trackAllAnswers() {
-        const answers = {};
-        document.querySelectorAll('input[type="radio"]:checked, textarea').forEach(el => {
-            if (el.type === 'radio' && el.checked) {
-                answers[el.name] = el.value;
-            } else if (el.type === 'textarea' && el.value.trim()) {
-                answers[el.name] = el.value;
-            }
-        });
-        
-        let answeredCount = Object.keys(answers).length;
-        document.getElementById('progress_display').textContent = answeredCount + ' / {{ assessment.questions|length }} answered';
+
+    function buildNavControls() {
+        const nav = document.createElement('div');
+        nav.id = 'nav-controls';
+        nav.style.cssText = 'display:flex; justify-content:space-between; margin-top:2rem;';
+        const prevBtn = document.createElement('button');
+        prevBtn.type='button'; prevBtn.id='prev-question'; prevBtn.className='btn btn-secondary'; prevBtn.textContent='Previous';
+        prevBtn.onclick = prevQuestion;
+        const nextBtn = document.createElement('button');
+        nextBtn.type='button'; nextBtn.id='next-question'; nextBtn.className='btn btn-secondary'; nextBtn.textContent='Next';
+        nextBtn.onclick = nextQuestion;
+        nav.appendChild(prevBtn);
+        nav.appendChild(nextBtn);
+        const form = document.getElementById('assessment_form');
+        form.appendChild(nav);
     }
-    
-    // Listen for changes
+
+    // listeners for input changes
     document.querySelectorAll('input[type="radio"], textarea').forEach(el => {
-        el.addEventListener('change', trackAllAnswers);
-        el.addEventListener('input', trackAllAnswers);
+        el.addEventListener('change', updateProgress);
+        el.addEventListener('input', updateProgress);
     });
-    
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (perQuestionTimer) {
+            document.querySelector('.timer-label').textContent = '⏱️ Question Timer:';
+        }
+        if (perQuestionTimer || !allowBack) {
+            buildNavControls();
+            showQuestion(0);
+        }
+        if (!perQuestionTimer) {
+            timerInterval = setInterval(updateTimer, 1000);
+            updateTimer();
+        }
+    });
+
     // Prevent accidental page exit
     window.addEventListener('beforeunload', function(e) {
         if (document.querySelectorAll('input:checked, textarea').length > 0) {
@@ -166,6 +240,144 @@
             e.returnValue = '';
         }
     });
+
+    // ---------- anti-copy / screenshot behaviour ----------
+    document.addEventListener('copy', e => e.preventDefault());
+    document.addEventListener('cut', e => e.preventDefault());
+    document.addEventListener('paste', e => e.preventDefault());
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+        if (e.ctrlKey || e.metaKey) {
+            const forbidden = ['c','x','v','p','s','u'];
+            if (forbidden.includes(e.key.toLowerCase())) {
+                e.preventDefault();
+                alert('Copying/screen capture is disabled during the assessment.');
+            }
+        }
+        if (e.key === 'PrintScreen') {
+            e.preventDefault();
+            alert('Screenshots are disabled.');
+        }
+    });
+
+    // ---------- face tracking / proctoring ----------
+    let faceDetector;
+    let video = document.getElementById('proctor_video');
+    let violationCooldown = false;
+
+    async function startFaceTracking() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            await video.play();
+            if ('FaceDetector' in window) {
+                faceDetector = new window.FaceDetector({ fastMode: true, maxDetectedFaces: 1 });
+                checkFaceLoop();
+            } else {
+                console.warn('FaceDetector API not supported in this browser.');
+            }
+        } catch (err) {
+            console.warn('Unable to access camera for proctoring:', err);
+            alert('Camera access is required for this assessment. Your test will be cancelled.');
+            for (let i = 0; i < 3; i++) {
+                try { await sendWarning(); } catch(e) { }
+            }
+        }
+    }
+
+    async function checkFaceLoop() {
+        if (violationCooldown || video.paused || video.ended) {
+            setTimeout(checkFaceLoop, 1000);
+            return;
+        }
+        try {
+            const faces = await faceDetector.detect(video);
+            let violation = false;
+            if (!faces || faces.length === 0) {
+                violation = true;
+            } else {
+                const face = faces[0].boundingBox;
+                const vw = video.videoWidth;
+                const vh = video.videoHeight;
+                const centerX = face.x + face.width / 2;
+                const centerY = face.y + face.height / 2;
+                if (centerX < vw * 0.25 || centerX > vw * 0.75 || centerY < vh * 0.25 || centerY > vh * 0.75) {
+                    violation = true;
+                }
+            }
+            if (violation) sendWarning();
+        } catch (err) {
+            console.error('proctoring check failed', err);
+        }
+        setTimeout(checkFaceLoop, 2000);
+    }
+
+    async function sendWarning() {
+        violationCooldown = true;
+        try {
+            const resp = await fetch('{{ url_for("record_warning", assessment_id=assessment.id) }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await resp.json();
+            if (data.cancelled) {
+                alert('Your assessment has been cancelled due to repeated violations.');
+                window.location.href = '{{ url_for("candidate_assessments") }}';
+                return;
+            }
+            alert('Warning #' + data.warnings + ': please keep your face visible and centered. Your total score will be reduced by 5%.');
+        } catch (err) {
+            console.error('warning request failed', err);
+        }
+        setTimeout(() => { violationCooldown = false; }, 3000);
+    }
+
+    if (allowFace) {
+        startFaceTracking();
+    }
+    if (allowVoice) {
+        async function startVoiceTracking() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                console.log('Voice tracking active');
+                const audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+                const source = audioCtx.createMediaStreamSource(stream);
+                const analyser = audioCtx.createAnalyser();
+                source.connect(analyser);
+                analyser.fftSize = 256;
+                const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                function monitor() {
+                    analyser.getByteTimeDomainData(dataArray);
+                    let sum = 0;
+                    for (let i=0;i<dataArray.length;i++) sum += Math.abs(dataArray[i]-128);
+                    const avg = sum / dataArray.length;
+                    if (avg > 40) {
+                        console.warn('Loud sound detected during assessment');
+                        // send voice warning to backend
+                        fetch('{{ url_for("record_warning", assessment_id=assessment.id) }}', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ reason: 'voice' })
+                        })
+                        .then(r => r.json())
+                        .then(d => {
+                            if (d.cancelled) {
+                                alert('Your assessment has been cancelled due to repeated violations.');
+                                window.location.href = '{{ url_for("candidate_assessments") }}';
+                            } else {
+                                alert('Noise warning #' + d.count + '. Please keep sound levels down.');
+                            }
+                        }).catch(e => console.error('voice warning send failed', e));
+                    }
+                    requestAnimationFrame(monitor);
+                }
+                monitor();
+            } catch (err) {
+                console.warn('Unable to access microphone for voice tracking:', err);
+            }
+        }
+        startVoiceTracking();
+    }
 </script>
 
 <style>

@@ -6,12 +6,62 @@
 <section id="reports" class="section">
     <h2>Reports</h2>
 
-    <div class="card">
-        <p style="margin-bottom:1rem;">Export system reports:</p>
-        <button class="btn btn-secondary">Export Candidates (CSV)</button>
-        <button class="btn btn-secondary">Export Results (PDF)</button>
-        <button class="btn btn-secondary">Export Audit Logs</button>
+    {% if summary %}
+    <div class="card" style="margin-bottom:1rem; padding:1rem;">
+        <h3>Overview</h3>
+        <table>
+            <tr><th>Total attempts</th><td>{{ summary.total_results }}</td></tr>
+            <tr><th>Passed</th><td>{{ summary.passed }}</td></tr>
+            <tr><th>Failed</th><td>{{ summary.failed }}</td></tr>
+            <tr><th>Average score</th><td>{{ summary.average_score }}%</td></tr>
+            <tr><th>Highest score</th><td>{{ summary.highest }}%</td></tr>
+            <tr><th>Lowest score</th><td>{{ summary.lowest }}%</td></tr>
+            <tr><th>Total warnings</th><td>{{ summary.total_violations }}</td></tr>
+        </table>
     </div>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('export_reports') }}" class="card" style="padding:1rem;">
+        <h3 style="margin-top:0;">Filter before export</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+            <div>
+                <label>Assessment:</label>
+                <select name="assessment_id">
+                    <option value="">-- all --</option>
+                    {% for a in assessments %}
+                        <option value="{{a.id}}" {% if request.args.get('assessment_id')|int == a.id %}selected{% endif %}>{{a.title}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label>Candidate:</label>
+                <select name="candidate_id">
+                    <option value="">-- all --</option>
+                    {% for u in candidates %}
+                        <option value="{{u.id}}" {% if request.args.get('candidate_id')|int == u.id %}selected{% endif %}>{{u.get_full_name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label>Start date:</label>
+                <input type="date" name="start_date" value="{{ request.args.get('start_date','') }}">
+            </div>
+            <div>
+                <label>End date:</label>
+                <input type="date" name="end_date" value="{{ request.args.get('end_date','') }}">
+            </div>
+            <div style="grid-column: span 2;">
+                <label>Minimum warnings:</label>
+                <input type="number" min="0" name="min_warnings" value="{{ request.args.get('min_warnings','') }}" style="width:100px;">
+            </div>
+        </div>
+        <input type="hidden" name="format" id="export_format" value="csv">
+        <div style="display:flex; gap:1rem;">
+            <button type="submit" class="btn btn-secondary" onclick="document.getElementById('export_format').value='csv'">Export CSV</button>
+            <button type="submit" class="btn btn-secondary" onclick="document.getElementById('export_format').value='pdf'">Export PDF</button>
+            <button type="submit" class="btn btn-secondary" onclick="document.getElementById('export_format').value='doc'">Export Word</button>
+        </div>
+    </form>
 </section>
 
 {% endblock %}

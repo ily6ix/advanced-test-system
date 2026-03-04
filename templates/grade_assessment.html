@@ -20,6 +20,17 @@
             <p style="margin: 0;">
                 <strong>Time Spent:</strong> {{ result.time_spent }} minutes
             </p>
+            <p style="margin: 0;">
+                <strong>Face warnings:</strong> {{ result.face_warnings or 0 }}
+                &nbsp;|&nbsp;
+                <strong>Noise warnings:</strong> {{ result.voice_warnings or 0 }}
+                {% if result.deduction_percentage %}
+                    (<strong>{{ result.deduction_percentage }}%</strong> total deduction applied)
+                {% endif %}
+            </p>
+            {% if result.status == 'cancelled' %}
+                <p style="color: red; font-weight: 600;">Assessment has been cancelled due to repeated rule violations.</p>
+            {% endif %}
         </div>
 
         {% if result.answers %}

@@ -34,6 +34,48 @@
             </label>
         </div>
 
+        <div style="margin-bottom: 1.5rem;">
+            <label>
+                <input type="checkbox" name="allow_back_navigation" {% if assessment.allow_back_navigation %}checked{% endif %}>
+                <span style="margin-left: 0.5rem;">Allow candidates to navigate back between questions</span>
+            </label>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label>
+                <input type="checkbox" name="per_question_timer" {% if assessment.per_question_timer %}checked{% endif %}>
+                <span style="margin-left: 0.5rem;">Enable per-question timing (overrides global timer)</span>
+            </label>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label>
+                <input type="checkbox" name="allow_face_tracking" {% if assessment.allow_face_tracking %}checked{% endif %}>
+                <span style="margin-left: 0.5rem;">Enable face tracking (webcam)</span>
+            </label>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label>
+                <input type="checkbox" name="allow_voice_tracking" {% if assessment.allow_voice_tracking %}checked{% endif %}>
+                <span style="margin-left: 0.5rem;">Enable voice tracking (microphone)</span>
+            </label>
+        </div>
+
+        {% if users %}
+        <div style="margin-bottom: 2rem;">
+            <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Assigned Candidates</label>
+            <div style="max-height:200px; overflow:auto; border:1px solid #ddd; padding:1rem; border-radius:6px;">
+                {% for u in users %}
+                <label style="display:block; margin-bottom:0.5rem;">
+                    <input type="checkbox" name="assigned_to" value="{{u.id}}" {% if u.id in (assessment.assigned_to or []) %}checked{% endif %}>
+                    <span style="margin-left:0.5rem;">{{u.get_full_name}} &lt;{{u.email}}&gt;</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
         <button class="btn btn-secondary" type="submit">
             {{ 'Create Assessment' if action == 'create' else 'Save Assessment' }}
         </button>
