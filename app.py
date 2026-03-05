@@ -1,11 +1,36 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 import os
 import json
+import random
+import smtplib
+from email.mime.text import MIMEText
 from datetime import datetime
 
 app = Flask(__name__)
 # secret key for session/flash messages; in production use an environment variable
 app.secret_key = 'replace-with-secure-random'
+
+# --- email helper ---
+def send_verification_email(email, code):
+    """Send verification code to email. In production, configure SMTP."""
+    subject = "Your Verification Code - Advanced Test System"
+    body = f"Your verification code is: {code}\n\nPlease enter this code to complete your registration."
+    
+    # For development, just print the code
+    print(f"Verification code for {email}: {code}")
+    
+    # In production, uncomment and configure:
+    # msg = MIMEText(body)
+    # msg['Subject'] = subject
+    # msg['From'] = 'noreply@yourdomain.com'
+    # msg['To'] = email
+    # 
+    # with smtplib.SMTP('smtp.yourdomain.com', 587) as server:
+    #     server.starttls()
+    #     server.login('your_email@yourdomain.com', 'password')
+    #     server.sendmail(msg['From'], [msg['To']], msg.as_string())
+    
+    return True  # Indicate success
 
 # --- persistence helpers --------------------------------------------------
 
@@ -61,6 +86,10 @@ assessments = load_from_file('assessments.json', [])
 # Load notifications
 notifications = load_from_file('notifications.json', [])
 
+groups = load_from_file('groups.json', [])
+
+next_group_id = max((g.get('id', 0) for g in groups), default=0) + 1
+
 # Migrate old assessment format to new format
 for assessment in assessments:
     if 'assigned_to' not in assessment:
@@ -78,6 +107,8 @@ for assessment in assessments:
         assessment['allow_face_tracking'] = True
     if 'allow_voice_tracking' not in assessment:
         assessment['allow_voice_tracking'] = False
+    if 'max_attempts' not in assessment:
+        assessment['max_attempts'] = 1
     # Ensure proctoring counts exist
     if 'face_warnings' not in assessment:
         # not stored at assessment level; but ensure results later
@@ -182,6 +213,85 @@ def login():
             flash('Invalid email or password', 'danger')
     return render_template('login.html')
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        step = request.form.get('step', '1')
+        
+        if step == '1':
+            # Step 1: Collect info and send code
+            full_name = request.form.get('full_name', '').strip()
+            email = request.form.get('email', '').strip()
+            password = request.form.get('password', '').strip()
+            confirm_password = request.form.get('confirm_password', '').strip()
+            
+            # Validation
+            if not full_name or not email or not password:
+                flash('All fields are required.', 'danger')
+                return render_template('register.html', step=1)
+            
+            if password != confirm_password:
+                flash('Passwords do not match.', 'danger')
+                return render_template('register.html', step=1)
+            
+            # Check if email already exists
+            if any(u['email'] == email for u in users):
+                flash('Email already registered.', 'danger')
+                return render_template('register.html', step=1)
+            
+            # Generate verification code
+            code = str(random.randint(100000, 999999))
+            
+            # Send email
+            send_verification_email(email, code)
+            
+            # Store in session
+            session['reg_full_name'] = full_name
+            session['reg_email'] = email
+            session['reg_password'] = password
+            session['reg_code'] = code
+            
+            # For development: show code in flash message
+            flash(f'Verification code sent to your email. For development testing, your code is: {code}', 'info')
+            return render_template('register.html', step=2, email=email)
+        
+        elif step == '2':
+            # Step 2: Verify code and create user
+            entered_code = request.form.get('code', '').strip()
+            stored_code = session.get('reg_code')
+            
+            if not entered_code or entered_code != stored_code:
+                flash('Invalid verification code.', 'danger')
+                return render_template('register.html', step=2, email=session.get('reg_email'))
+            
+            # Create user
+            global next_user_id
+            new_user = {
+                'id': next_user_id,
+                'get_full_name': session['reg_full_name'],
+                'email': session['reg_email'],
+                'password': session['reg_password'],
+                'is_active': True,
+                'role': 'Candidate',
+                'last_login': None,
+            }
+            users.append(new_user)
+            next_user_id += 1
+            save_to_file('users.json', users)
+            
+            # Clear session
+            session.pop('reg_full_name', None)
+            session.pop('reg_email', None)
+            session.pop('reg_password', None)
+            session.pop('reg_code', None)
+            
+            flash('Registration successful! You can now log in.', 'success')
+            return redirect(url_for('login'))
+    
+    # GET request
+    step = request.args.get('step', '1')
+    return render_template('register.html', step=step)
+
 @app.route('/dashboard')
 def dashboard():
     # Admin overview page (previously dashboard)
@@ -232,12 +342,12 @@ def admin_overview():
         **stats,
     )
 
-@app.route('/admin/candidates')
-def admin_candidates():
+@app.route('/admin/users')
+def admin_users():
     if not require_login('Administrator'):
         return redirect(url_for('login'))
-    candidate_list = [u for u in users if u['role'] == 'Candidate']
-    return render_template('admin_candidates.html', active='candidates', users=candidate_list)
+    user_list = users  # all users
+    return render_template('admin_users.html', active='users', users=user_list, groups=groups)
 
 @app.route('/admin/assessments')
 def admin_assessments():
@@ -506,6 +616,64 @@ def edit_user(user_id):
 
     return render_template('user_form.html', action='edit', user=user)
 
+@app.route('/admin/groups/add', methods=['GET', 'POST'])
+def add_group():
+    if not require_login('Administrator'):
+        return redirect(url_for('login'))
+    
+    global next_group_id
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        description = request.form.get('description', '').strip()
+        members = [int(uid) for uid in request.form.getlist('members') if uid]
+        new_group = {
+            'id': next_group_id,
+            'name': name,
+            'description': description,
+            'members': members,
+        }
+        groups.append(new_group)
+        next_group_id += 1
+        save_to_file('groups.json', groups)
+        flash(f'Group "{name}" added successfully.', 'success')
+        return redirect(url_for('admin_users'))
+    candidate_users = [u for u in users if u['role'] == 'Candidate']
+    return render_template('group_form.html', action='add', group={}, users=candidate_users)
+
+@app.route('/admin/groups/<int:group_id>/edit', methods=['GET', 'POST'])
+def edit_group(group_id):
+    if not require_login('Administrator'):
+        return redirect(url_for('login'))
+    
+    group = next((g for g in groups if g['id'] == group_id), None)
+    if not group:
+        flash('Group not found.', 'danger')
+        return redirect(url_for('admin_users'))
+    if request.method == 'POST':
+        group['name'] = request.form.get('name', '').strip()
+        group['description'] = request.form.get('description', '').strip()
+        group['members'] = [int(uid) for uid in request.form.getlist('members') if uid]
+        save_to_file('groups.json', groups)
+        flash(f'Group "{group["name"]}" updated successfully.', 'success')
+        return redirect(url_for('admin_users'))
+    candidate_users = [u for u in users if u['role'] == 'Candidate']
+    return render_template('group_form.html', action='edit', group=group, users=candidate_users)
+
+@app.route('/admin/groups/<int:group_id>/delete', methods=['POST'])
+def delete_group(group_id):
+    if not require_login('Administrator'):
+        return redirect(url_for('login'))
+    
+    global groups
+    group = next((g for g in groups if g['id'] == group_id), None)
+    if group:
+        groups = [g for g in groups if g['id'] != group_id]
+        save_to_file('groups.json', groups)
+        flash(f'Group "{group["name"]}" deleted successfully.', 'success')
+    else:
+        flash('Group not found.', 'danger')
+    return redirect(url_for('admin_users'))
+
 @app.route('/admin/assessments/create', methods=['GET', 'POST'])
 def create_assessment():
     if not require_login('Administrator'):
@@ -517,12 +685,19 @@ def create_assessment():
         description = request.form.get('description', '').strip()
         duration = int(request.form.get('duration', '0') or 0)
         passing_score = int(request.form.get('passing_score', '0') or 0)
+        max_attempts = int(request.form.get('max_attempts', '1') or 1)
         is_published = bool(request.form.get('is_published'))
         allow_back = bool(request.form.get('allow_back_navigation'))
         per_q_timer = bool(request.form.get('per_question_timer'))
         face_track = bool(request.form.get('allow_face_tracking'))
         voice_track = bool(request.form.get('allow_voice_tracking'))
         assigned = [int(uid) for uid in request.form.getlist('assigned_to') if uid]
+        assigned_groups = [int(gid) for gid in request.form.getlist('assigned_groups') if gid]
+        for gid in assigned_groups:
+            group = next((g for g in groups if g['id'] == gid), None)
+            if group:
+                assigned.extend(group['members'])
+        assigned = list(set(assigned))  # remove duplicates
 
         new_assessment = {
             'id': next_assessment_id,
@@ -530,6 +705,7 @@ def create_assessment():
             'description': description,
             'duration': duration,
             'passing_score': passing_score,
+            'max_attempts': max_attempts,
             'is_published': is_published,
             'allow_back_navigation': allow_back,
             'per_question_timer': per_q_timer,
@@ -561,7 +737,7 @@ def create_assessment():
 
     # pass candidate list for assigning
     candidate_users = [u for u in users if u['role'] == 'Candidate']
-    return render_template('assessment_form.html', action='create', assessment={}, users=candidate_users)
+    return render_template('assessment_form.html', action='create', assessment={}, users=candidate_users, groups=groups)
 
 @app.route('/admin/assessments/<int:assessment_id>/edit', methods=['GET', 'POST'])
 def edit_assessment(assessment_id):
@@ -578,6 +754,7 @@ def edit_assessment(assessment_id):
         assessment['description'] = request.form.get('description', '').strip()
         assessment['duration'] = int(request.form.get('duration', assessment.get('duration', 0)) or 0)
         assessment['passing_score'] = int(request.form.get('passing_score', assessment.get('passing_score', 0)) or 0)
+        assessment['max_attempts'] = int(request.form.get('max_attempts', assessment.get('max_attempts', 1)) or 1)
         assessment['is_published'] = bool(request.form.get('is_published'))
         assessment['allow_back_navigation'] = bool(request.form.get('allow_back_navigation'))
         assessment['per_question_timer'] = bool(request.form.get('per_question_timer'))
@@ -587,6 +764,11 @@ def edit_assessment(assessment_id):
         # Track which candidates are newly assigned
         old_assigned = set(assessment.get('assigned_to', []))
         new_assigned = set([int(uid) for uid in request.form.getlist('assigned_to') if uid])
+        assigned_groups = [int(gid) for gid in request.form.getlist('assigned_groups') if gid]
+        for gid in assigned_groups:
+            group = next((g for g in groups if g['id'] == gid), None)
+            if group:
+                new_assigned.update(group['members'])
         newly_assigned = new_assigned - old_assigned
         
         assessment['assigned_to'] = list(new_assigned)
@@ -617,7 +799,7 @@ def edit_assessment(assessment_id):
         return redirect(url_for('admin_assessments'))
 
     candidate_users = [u for u in users if u['role'] == 'Candidate']
-    return render_template('assessment_form.html', action='edit', assessment=assessment, users=candidate_users)
+    return render_template('assessment_form.html', action='edit', assessment=assessment, users=candidate_users, groups=groups)
 
 # Helper function to check login
 def require_login(required_role=None):
@@ -635,14 +817,15 @@ def get_candidate_assessments(candidate_id):
     candidate_assessments = []
     for assessment in assessments:
         if candidate_id in assessment.get('assigned_to', []):
-            # Find the result for this candidate
-            result = next(
-                (r for r in assessment.get('results', []) if r['candidate_id'] == candidate_id),
-                None
-            )
+            # Find all results for this candidate
+            candidate_results = [r for r in assessment.get('results', []) if r['candidate_id'] == candidate_id]
+            # Sort by submitted_date or start_date, latest first
+            candidate_results.sort(key=lambda r: r.get('submitted_date') or r.get('start_date') or '', reverse=True)
+            latest_result = candidate_results[0] if candidate_results else None
             candidate_assessments.append({
                 'assessment': assessment,
-                'result': result or {'status': 'not_assigned', 'score': None, 'passed': None}
+                'result': latest_result or {'status': 'not_assigned', 'score': None, 'passed': None},
+                'attempts_count': len([r for r in candidate_results if r.get('status') == 'completed'])
             })
     return candidate_assessments
 
@@ -919,14 +1102,28 @@ def take_assessment(assessment_id):
         flash('This assessment is not assigned to you.', 'danger')
         return redirect(url_for('candidate_assessments'))
     
-    # Find or create result for this candidate
-    result = next(
-        (r for r in assessment.get('results', []) if r['candidate_id'] == candidate_id),
-        None
-    )
+    # Get all results for this candidate
+    candidate_results = [r for r in assessment.get('results', []) if r['candidate_id'] == candidate_id]
+    completed_count = len([r for r in candidate_results if r.get('status') == 'completed'])
+    # Sort by submitted_date or start_date, latest first
+    candidate_results.sort(key=lambda r: r.get('submitted_date') or r.get('start_date') or '', reverse=True)
+    latest_result = candidate_results[0] if candidate_results else None
     
-    # If no result exists, create one on first access
-    if not result:
+    # Check if can take the assessment
+    can_retake = False
+    if latest_result and latest_result.get('status') == 'completed':
+        if latest_result.get('passed'):
+            # Passed, can't retake
+            pass
+        elif completed_count >= assessment.get('max_attempts', 1):
+            # No more attempts
+            pass
+        else:
+            can_retake = True
+    
+    # Determine which result to use
+    if can_retake:
+        # Create new result for retake
         result = {
             'candidate_id': candidate_id,
             'status': 'not_started',
@@ -938,22 +1135,43 @@ def take_assessment(assessment_id):
             'passed': None,
             'time_spent': 0,
             'due_date': None,
-            # proctoring fields
-            'face_warnings': 0,          # how many times face moved away
-            'voice_warnings': 0,         # how many noise reprimands
-            'cancelled': False           # whether the exam has been cancelled
+            'face_warnings': 0,
+            'voice_warnings': 0,
+            'cancelled': False
         }
         assessment.get('results', []).append(result)
         save_to_file('assessments.json', assessments)
+    else:
+        # Use existing latest result or create if none
+        if not latest_result:
+            result = {
+                'candidate_id': candidate_id,
+                'status': 'not_started',
+                'answers': [],
+                'submitted_date': None,
+                'graded_date': None,
+                'score_percentage': None,
+                'allocated_points': None,
+                'passed': None,
+                'time_spent': 0,
+                'due_date': None,
+                'face_warnings': 0,
+                'voice_warnings': 0,
+                'cancelled': False
+            }
+            assessment.get('results', []).append(result)
+            save_to_file('assessments.json', assessments)
+        else:
+            result = latest_result
     
     # if assessment has been cancelled for rules violations, kick user back
     if result.get('status') == 'cancelled' or result.get('cancelled'):
         flash('This assessment has been cancelled due to rule violations.', 'danger')
         return redirect(url_for('candidate_assessments'))
 
-    # If assessment is already completed, show results instead
-    if result.get('status') == 'completed':
-        return render_template('assessment_results.html', assessment=assessment, result=result)
+    # If the latest attempt is completed and cannot retake, show results
+    if latest_result and latest_result.get('status') == 'completed' and not can_retake:
+        return render_template('assessment_results.html', assessment=assessment, result=latest_result)
     
     # Handle GET request - show assessment rules
     if request.method == 'GET':
@@ -1073,6 +1291,16 @@ def grade_assessment(assessment_id, candidate_id):
         result['graded_date'] = datetime.now().isoformat()
         
         save_to_file('assessments.json', assessments)
+        
+        # Send notification to candidate
+        create_notification(
+            notification_type='assessment_graded',
+            user_id=candidate_id,
+            title=f'Assessment Graded: {assessment["title"]}',
+            message=f'Your assessment "{assessment["title"]}" has been graded. Score: {score_percentage}%. Status: {"Passed" if result["passed"] else "Failed"}.',
+            related_assessment_id=assessment_id
+        )
+        
         flash('Assessment graded successfully.', 'success')
         return redirect(url_for('admin_results'))
     

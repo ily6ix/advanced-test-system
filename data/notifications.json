@@ -17,7 +17,7 @@
     "title": "Assessment Submitted: test2",
     "message": "goitseone has submitted the assessment \"test2\" and is waiting for grading.",
     "created_at": "2026-03-04T11:15:08.053535",
-    "read": false,
+    "read": true,
     "related_assessment_id": 5,
     "related_candidate_id": 4
   },
@@ -61,8 +61,19 @@
     "title": "Assessment Submitted: Intro to Python",
     "message": "james has submitted the assessment \"Intro to Python\" and is waiting for grading.",
     "created_at": "2026-03-04T11:22:56.409982",
-    "read": false,
+    "read": true,
     "related_assessment_id": 1,
     "related_candidate_id": 3
+  },
+  {
+    "id": 7,
+    "type": "assessment_submitted",
+    "user_id": 1,
+    "title": "Assessment Submitted: Intro to Python",
+    "message": "Bob Lee has submitted the assessment \"Intro to Python\" and is waiting for grading.",
+    "created_at": "2026-03-05T09:51:34.034284",
+    "read": true,
+    "related_assessment_id": 1,
+    "related_candidate_id": 5
   }
 ]

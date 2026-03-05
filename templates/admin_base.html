@@ -231,7 +231,7 @@ th {
 <!-- SIDEBAR -->
 <nav class="sidebar">
     <a href="{{ url_for('admin_overview') }}" class="{% if active == 'overview' %}active{% endif %}"><i class="fas fa-chart-line"></i> Overview</a>
-    <a href="{{ url_for('admin_candidates') }}" class="{% if active == 'candidates' %}active{% endif %}"><i class="fas fa-users"></i> Candidates</a>
+    <a href="{{ url_for('admin_users') }}" class="{% if active == 'users' %}active{% endif %}"><i class="fas fa-users"></i> Users</a>
     <a href="{{ url_for('admin_assessments') }}" class="{% if active == 'assessments' %}active{% endif %}"><i class="fas fa-clipboard-list"></i> Assessments</a>
     <a href="{{ url_for('admin_results') }}" class="{% if active == 'results' %}active{% endif %}"><i class="fas fa-chart-pie"></i> Results</a>
     <a href="{{ url_for('admin_reports') }}" class="{% if active == 'reports' %}active{% endif %}"><i class="fas fa-file-export"></i> Reports</a>

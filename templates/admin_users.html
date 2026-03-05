@@ -1,0 +1,118 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+
+<!-- ================= USERS ================= -->
+<section id="users" class="section">
+    <h2>User Management</h2>
+
+    <div style="display:flex; justify-content:space-between; margin-bottom:1rem;">
+        <input type="text" placeholder="Search users..."
+            style="padding:0.5rem 1rem; border-radius:20px; border:1px solid #e5e7eb; width:260px;">
+        <a href="{{ url_for('add_user') }}" class="btn btn-secondary">+ Add User</a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Role</th>
+                <th>Groups</th>
+                <th>Last Login</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.get_full_name }}</td>
+                <td>{{ user.email }}</td>
+                <td>
+                    {% if user.is_active %}
+                        <span style="color:green;">Active</span>
+                    {% else %}
+                        <span style="color:red;">Suspended</span>
+                    {% endif %}
+                </td>
+                <td>{{ user.role }}</td>
+                <td>
+                    {% set user_groups = [] %}
+                    {% for group in groups %}
+                        {% if user.id in group.members %}
+                            {% set _ = user_groups.append(group.name) %}
+                        {% endif %}
+                    {% endfor %}
+                    {{ user_groups|join(', ') if user_groups else '-' }}
+                </td>
+                <td>
+                    {% if user.last_login %}
+                        {{ user.last_login.strftime('%b %d, %Y') }}
+                    {% else %}-
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn btn-secondary">Edit</a>
+                    <form method="post" action="{{ url_for('delete_user', user_id=user.id) }}" style="display:inline;">
+                        <button class="btn btn-secondary" onclick="return confirm('Remove this user?');">Remove</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" style="text-align:center;">No users found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<!-- ================= GROUPS ================= -->
+<section id="groups" class="section">
+    <h2>Group Management</h2>
+
+    <div style="display:flex; justify-content:space-between; margin-bottom:1rem;">
+        <input type="text" placeholder="Search groups..."
+            style="padding:0.5rem 1rem; border-radius:20px; border:1px solid #e5e7eb; width:260px;">
+        <a href="{{ url_for('add_group') }}" class="btn btn-secondary">+ Add Group</a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Group Name</th>
+                <th>Description</th>
+                <th>Members</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for group in groups %}
+            <tr>
+                <td>{{ group.name }}</td>
+                <td>{{ group.description }}</td>
+                <td>
+                    {% set member_names = [] %}
+                    {% for user in users %}
+                        {% if user.id in group.members %}
+                            {% set _ = member_names.append(user.get_full_name) %}
+                        {% endif %}
+                    {% endfor %}
+                    {{ member_names|join(', ') if member_names else 'No members' }}
+                </td>
+                <td>
+                    <a href="{{ url_for('edit_group', group_id=group.id) }}" class="btn btn-secondary">Edit</a>
+                    <form method="post" action="{{ url_for('delete_group', group_id=group.id) }}" style="display:inline;">
+                        <button class="btn btn-secondary" onclick="return confirm('Delete this group?');">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" style="text-align:center;">No groups found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+{% endblock %}

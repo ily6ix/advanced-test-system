@@ -7,8 +7,6 @@
     "passing_score": 70,
     "is_published": true,
     "assigned_to": [
-      3,
-      4,
       5
     ],
     "questions": [
@@ -80,44 +78,84 @@
       },
       {
         "candidate_id": 3,
-        "status": "submitted",
+        "status": "completed",
         "answers": [
           {
             "question_id": 1,
             "candidate_answer": "0",
-            "allocated_points": null,
-            "graded": false
+            "allocated_points": 10,
+            "graded": true
           },
           {
             "question_id": 2,
             "candidate_answer": "0",
-            "allocated_points": null,
-            "graded": false
+            "allocated_points": 0,
+            "graded": true
           },
           {
             "question_id": 3,
             "candidate_answer": "00",
-            "allocated_points": null,
-            "graded": false
+            "allocated_points": 10,
+            "graded": true
           }
         ],
         "submitted_date": "2026-03-04T11:22:56.409206",
-        "graded_date": null,
-        "score_percentage": null,
+        "graded_date": "2026-03-05T09:14:02.850460",
+        "score_percentage": 66,
         "allocated_points": null,
-        "passed": null,
+        "passed": false,
         "time_spent": 6,
         "due_date": null,
         "face_warnings": 0,
         "voice_warnings": 0,
         "cancelled": false,
-        "start_date": "2026-03-04T11:22:46.680564"
+        "start_date": "2026-03-04T11:22:46.680564",
+        "total_score": 20,
+        "graded_by_admin": 1
+      },
+      {
+        "candidate_id": 5,
+        "status": "completed",
+        "answers": [
+          {
+            "question_id": 1,
+            "candidate_answer": "0",
+            "allocated_points": 10,
+            "graded": true
+          },
+          {
+            "question_id": 2,
+            "candidate_answer": "2",
+            "allocated_points": 10,
+            "graded": true
+          },
+          {
+            "question_id": 3,
+            "candidate_answer": "ed",
+            "allocated_points": 10,
+            "graded": true
+          }
+        ],
+        "submitted_date": "2026-03-05T09:51:34.033392",
+        "graded_date": "2026-03-05T09:52:21.991934",
+        "score_percentage": 100,
+        "allocated_points": null,
+        "passed": true,
+        "time_spent": 5,
+        "due_date": null,
+        "face_warnings": 0,
+        "voice_warnings": 0,
+        "cancelled": false,
+        "start_date": "2026-03-05T09:51:25.366234",
+        "total_score": 30,
+        "graded_by_admin": 1
       }
     ],
     "allow_back_navigation": true,
     "per_question_timer": false,
     "allow_face_tracking": true,
-    "allow_voice_tracking": false
+    "allow_voice_tracking": false,
+    "max_attempts": 1
   },
   {
     "id": 2,
@@ -170,7 +208,8 @@
     "allow_back_navigation": true,
     "per_question_timer": false,
     "allow_face_tracking": true,
-    "allow_voice_tracking": false
+    "allow_voice_tracking": false,
+    "max_attempts": 1
   },
   {
     "id": 3,
@@ -224,7 +263,8 @@
     "allow_back_navigation": true,
     "per_question_timer": false,
     "allow_face_tracking": true,
-    "allow_voice_tracking": false
+    "allow_voice_tracking": false,
+    "max_attempts": 1
   },
   {
     "id": 4,
@@ -273,7 +313,8 @@
     "allow_back_navigation": true,
     "per_question_timer": false,
     "allow_face_tracking": true,
-    "allow_voice_tracking": true
+    "allow_voice_tracking": true,
+    "max_attempts": 1
   },
   {
     "id": 5,
@@ -300,27 +341,30 @@
     "results": [
       {
         "candidate_id": 4,
-        "status": "submitted",
+        "status": "completed",
         "answers": [
           {
             "question_id": 1,
             "candidate_answer": "qq",
-            "allocated_points": null,
-            "graded": false
+            "allocated_points": 0,
+            "graded": true
           }
         ],
         "submitted_date": "2026-03-04T11:15:08.052812",
-        "graded_date": null,
-        "score_percentage": null,
+        "graded_date": "2026-03-05T09:14:20.100720",
+        "score_percentage": 0,
         "allocated_points": null,
-        "passed": null,
+        "passed": false,
         "time_spent": 3,
         "due_date": null,
         "face_warnings": 0,
         "voice_warnings": 0,
         "cancelled": false,
-        "start_date": "2026-03-04T11:15:01.567197"
+        "start_date": "2026-03-04T11:15:01.567197",
+        "total_score": 0,
+        "graded_by_admin": 1
       }
-    ]
+    ],
+    "max_attempts": 1
   }
 ]

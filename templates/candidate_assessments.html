@@ -12,6 +12,7 @@
                 <th>Description</th>
                 <th>Duration</th>
                 <th>Status</th>
+                <th>Attempts</th>
                 <th>Warnings</th>
                 <th>Due</th>
                 <th>Action</th>
@@ -37,6 +38,7 @@
                                 <span class="status not-started">Not Started</span>
                             {% endif %}
                         </td>
+                        <td>{{ ca.attempts_count }} / {{ ca.assessment.max_attempts }}</td>
                         <td>
                             {{ ca.result.face_warnings or 0 }} / {{ ca.result.voice_warnings or 0 }}
                         </td>
@@ -50,6 +52,9 @@
                         <td>
                             {% if ca.result.status == 'completed' %}
                                 <a href="{{ url_for('take_assessment', assessment_id=ca.assessment.id) }}" class="btn btn-success" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">View Results</a>
+                                {% if not ca.result.passed and ca.attempts_count < ca.assessment.max_attempts %}
+                                    <a href="{{ url_for('take_assessment', assessment_id=ca.assessment.id) }}" class="btn btn-warning" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Retake</a>
+                                {% endif %}
                             {% elif ca.result.status == 'submitted' %}
                                 <button class="btn btn-secondary" disabled style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Pending</button>
                             {% elif ca.result.status == 'in_progress' %}
@@ -64,7 +69,7 @@
                 {% endfor %}
             {% else %}
                 <tr>
-                    <td colspan="6" style="text-align: center; color: #999;">No assessments assigned yet.</td>
+                    <td colspan="8" style="text-align: center; color: #999;">No assessments assigned yet.</td>
                 </tr>
             {% endif %}
         </tbody>

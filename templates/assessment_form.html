@@ -27,6 +27,11 @@
             <input type="number" name="passing_score" min="0" max="100" value="{{ assessment.passing_score or '' }}" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;">
         </div>
 
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Maximum Attempts:</label>
+            <input type="number" name="max_attempts" min="1" value="{{ assessment.max_attempts or 1 }}" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px;">
+        </div>
+
         <div style="margin-bottom: 2rem;">
             <label>
                 <input type="checkbox" name="is_published" {% if assessment.is_published %}checked{% endif %}>
@@ -64,6 +69,15 @@
 
         {% if users %}
         <div style="margin-bottom: 2rem;">
+            <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Assigned Groups</label>
+            <div style="max-height:200px; overflow:auto; border:1px solid #ddd; padding:1rem; border-radius:6px; margin-bottom:1rem;">
+                {% for g in groups %}
+                <label style="display:block; margin-bottom:0.5rem;">
+                    <input type="checkbox" name="assigned_groups" value="{{g.id}}">
+                    <span style="margin-left:0.5rem;">{{g.name}} ({{g.members|length}} members)</span>
+                </label>
+                {% endfor %}
+            </div>
             <label style="display:block; font-weight:600; margin-bottom:0.5rem;">Assigned Candidates</label>
             <div style="max-height:200px; overflow:auto; border:1px solid #ddd; padding:1rem; border-radius:6px;">
                 {% for u in users %}
