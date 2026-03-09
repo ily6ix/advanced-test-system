@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
 import os
 import json
 import random
@@ -40,11 +40,14 @@ def send_verification_email(email, code):
 # --- persistence helpers --------------------------------------------------
 
 DATA_DIR = 'data'
+VIOLATION_IMAGES_DIR = 'data/violation_images'
 
 
 def ensure_data_dir():
     if not os.path.isdir(DATA_DIR):
         os.makedirs(DATA_DIR)
+    if not os.path.isdir(VIOLATION_IMAGES_DIR):
+        os.makedirs(VIOLATION_IMAGES_DIR)
 
 
 def _convert_datetimes(obj):
@@ -1448,6 +1451,13 @@ def analyze_frame(assessment_id):
         
         # If violations detected, record warning
         if violations:
+            # Save the violation image
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            image_filename = f"violation_{assessment_id}_{candidate_id}_{timestamp}.jpg"
+            image_path = os.path.join(VIOLATION_IMAGES_DIR, image_filename)
+            with open(image_path, 'wb') as f:
+                f.write(image_bytes)
+            
             # Use the first violation as the reason
             reason = violations[0]
             
@@ -1468,7 +1478,7 @@ def analyze_frame(assessment_id):
                     notification_type='proctoring_violation',
                     user_id=admin['id'],
                     title=f'Computer Vision Alert: {assessment["title"]}',
-                    message=f'{candidate_name} detected with {reason.replace("_", " ")} during assessment "{assessment["title"]}". Warning #{count}.',
+                    message=f'{candidate_name} detected with {reason.replace("_", " ")} during assessment "{assessment["title"]}". Warning #{count}. Proof image: <a href="/admin/violation_images/{image_filename}" target="_blank">View Image</a>',
                     related_assessment_id=assessment_id,
                     related_candidate_id=candidate_id
                 )
@@ -1497,6 +1507,15 @@ def add_no_cache_headers(response):
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
     return response
+
+
+@app.route('/admin/violation_images/<filename>')
+def violation_image(filename):
+    """Serve violation images to admins"""
+    if not require_login('Administrator'):
+        return redirect(url_for('login'))
+    
+    return send_from_directory(VIOLATION_IMAGES_DIR, filename)
 
 
 if __name__ == '__main__':

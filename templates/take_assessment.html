@@ -26,8 +26,10 @@
 
     <form method="post" id="assessment_form" style="background: white; padding: 2rem; border-radius: 10px; border: 1px solid #e0e0e0;">
         <input type="hidden" name="time_spent" id="time_spent" value="0">
-        <!-- hidden video element used for face tracking -->
-        <video id="proctor_video" autoplay muted playsinline style="display:none;"></video>
+        <!-- video element for face tracking, visible as small window if enabled -->
+        {% if assessment.allow_face_tracking %}
+        <video id="proctor_video" autoplay muted playsinline style="position: fixed; bottom: 10px; right: 10px; width: 150px; height: 100px; border: 2px solid #333; border-radius: 5px; z-index: 1000; object-fit: cover;"></video>
+        {% endif %}
 
         {% if assessment.questions %}
             {% for question in assessment.questions %}
