@@ -71,6 +71,7 @@
                     <th>Warnings (face/voice)</th>
                     <th>Status</th>
                     <th>Graded Date</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -99,11 +100,14 @@
                                 {% endif %}
                             </td>
                             <td>{{ item.result.graded_date | replace('T', ' ') | truncate(19, True, '') if item.result.graded_date else '—' }}</td>
+                            <td>
+                                <a href="{{ url_for('view_full_report', assessment_id=item.assessment.id, candidate_id=item.candidate.id) }}" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">View Report</a>
+                            </td>
                         </tr>
                     {% endfor %}
                 {% else %}
                     <tr>
-                        <td colspan="5" style="text-align: center; color: #999;">No completed results.</td>
+                        <td colspan="6" style="text-align: center; color: #999;">No completed results.</td>
                     </tr>
                 {% endif %}
             </tbody>

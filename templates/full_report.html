@@ -1,0 +1,140 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+<section class="section">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h2>Full Assessment Report</h2>
+            <p style="color: #666; margin: 0.5rem 0;">Assessment: <strong>{{ assessment.title }}</strong></p>
+            <p style="color: #666; margin: 0;">Candidate: <strong>{{ candidate.get_full_name }} ({{ candidate.email }})</strong></p>
+        </div>
+        <a href="{{ url_for('admin_results') }}" class="btn btn-secondary">Back to Results</a>
+    </div>
+
+    <div style="background: white; padding: 2rem; border-radius: 10px; border: 1px solid #e0e0e0; margin-bottom: 2rem;">
+        <h3 style="margin: 0 0 1.5rem 0;">Assessment Summary</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div style="padding: 1rem; background: #f9f9f9; border-radius: 8px;">
+                <strong>Submitted:</strong> {{ result.submitted_date | replace('T', ' ') | truncate(19, True, '') if result.submitted_date else 'Not submitted' }}
+            </div>
+            <div style="padding: 1rem; background: #f9f9f9; border-radius: 8px;">
+                <strong>Time Spent:</strong> {{ result.time_spent }} minutes
+            </div>
+            <div style="padding: 1rem; background: #f9f9f9; border-radius: 8px;">
+                <strong>Final Score:</strong> {{ result.score_percentage }}%
+            </div>
+            <div style="padding: 1rem; background: #f9f9f9; border-radius: 8px;">
+                <strong>Status:</strong> 
+                {% if result.passed %}
+                    <span style="color: green; font-weight: 600;">Passed</span>
+                {% else %}
+                    <span style="color: red; font-weight: 600;">Failed</span>
+                {% endif %}
+            </div>
+            <div style="padding: 1rem; background: #f9f9f9; border-radius: 8px;">
+                <strong>Face Warnings:</strong> {{ result.face_warnings or 0 }}
+            </div>
+            <div style="padding: 1rem; background: #f9f9f9; border-radius: 8px;">
+                <strong>Voice Warnings:</strong> {{ result.voice_warnings or 0 }}
+            </div>
+            {% if result.deduction_percentage %}
+            <div style="padding: 1rem; background: #f9f9f9; border-radius: 8px;">
+                <strong>Deduction Applied:</strong> {{ result.deduction_percentage }}%
+            </div>
+            {% endif %}
+            {% if result.cancelled %}
+            <div style="padding: 1rem; background: #ffdddd; border-radius: 8px; border: 1px solid #ffaaaa;">
+                <strong style="color: red;">Assessment Cancelled:</strong> Due to repeated violations
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if result.audio_recording %}
+        <div style="background: white; padding: 2rem; border-radius: 10px; border: 1px solid #e0e0e0; margin-bottom: 2rem;">
+            <h3 style="margin: 0 0 1.5rem 0;">Audio Recording</h3>
+            <p style="color: #666; margin-bottom: 1rem;">Candidate's recorded explanation and thought process:</p>
+            <audio controls style="width: 100%; max-width: 400px;">
+                <source src="{{ url_for('audio_recording', filename=result.audio_recording) }}" type="audio/wav">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+    {% endif %}
+
+    {% if result.answers %}
+        <div style="background: white; padding: 2rem; border-radius: 10px; border: 1px solid #e0e0e0; margin-bottom: 2rem;">
+            <h3 style="margin: 0 0 1.5rem 0;">Questions & Answers</h3>
+            
+            {% for answer in result.answers %}
+                {% set question = assessment.questions | selectattr('id', 'equalto', answer.question_id) | first %}
+                {% if question %}
+                    <div style="margin-bottom: 2rem; padding: 1.5rem; background: #f9f9f9; border-radius: 8px; border-left: 4px solid #1f4ed8;">
+                        <h4 style="margin: 0 0 1rem 0;">Question {{ loop.index }}: {{ question.text }}</h4>
+                        
+                        <div style="margin-bottom: 1rem; padding: 1rem; background: white; border-radius: 6px;">
+                            <p style="margin: 0 0 0.5rem 0; color: #666;"><strong>Type:</strong> {% if question.type == 'multiple_choice' %}Multiple Choice{% else %}Short Answer{% endif %}</p>
+                            
+                            {% if question.type == 'multiple_choice' %}
+                                <p style="margin: 0 0 0.5rem 0;"><strong>Correct Answer:</strong> {{ question.options[question.correct_answer] }}</p>
+                                <p style="margin: 0 0 0.5rem 0;"><strong>Candidate Answer:</strong> 
+                                    {% if answer.candidate_answer is not none %}
+                                        {{ question.options[answer.candidate_answer | int] }}
+                                        {% if (answer.candidate_answer | int) == question.correct_answer %}
+                                            <span style="color: green; font-weight: 600;">✓ Correct</span>
+                                        {% else %}
+                                            <span style="color: red; font-weight: 600;">✗ Incorrect</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <em style="color: #999;">No answer provided</em>
+                                    {% endif %}
+                                </p>
+                            {% else %}
+                                <p style="margin: 0 0 0.5rem 0;"><strong>Correct Answer:</strong> <em>Not predefined (manual grading)</em></p>
+                                <p style="margin: 0 0 0.5rem 0; padding: 0.75rem; background: #f5f5f5; border-radius: 4px; border-left: 3px solid #ff9800;">
+                                    <strong>Candidate Answer:</strong> {{ answer.candidate_answer or '(No answer)' }}
+                                </p>
+                            {% endif %}
+                            
+                            <p style="margin: 0;"><strong>Points Awarded:</strong> {{ answer.allocated_points or 0 }} / {{ question.points }}</p>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="background: white; padding: 2rem; border-radius: 10px; border: 1px solid #e0e0e0; margin-bottom: 2rem;">
+            <p style="color: #999; font-style: italic; text-align: center; padding: 2rem;">
+                Candidate has not submitted any answers yet.
+            </p>
+        </div>
+    {% endif %}
+
+    {% if violation_images %}
+        <div style="background: white; padding: 2rem; border-radius: 10px; border: 1px solid #e0e0e0;">
+            <h3 style="margin: 0 0 1.5rem 0;">Violation Images</h3>
+            <p style="color: #666; margin-bottom: 1.5rem;">Images captured during computer vision monitoring that triggered violations:</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+                {% for image in violation_images %}
+                    <div style="border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+                        <img src="{{ url_for('violation_image', filename=image) }}" 
+                             alt="Violation Image" 
+                             style="width: 100%; height: 200px; object-fit: cover; display: block;">
+                        <div style="padding: 0.75rem; background: #f9f9f9;">
+                            <small style="color: #666;">{{ image }}</small>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div style="background: white; padding: 2rem; border-radius: 10px; border: 1px solid #e0e0e0;">
+            <h3 style="margin: 0 0 1.5rem 0;">Violation Images</h3>
+            <p style="color: #999; font-style: italic; text-align: center; padding: 2rem;">
+                No violation images captured for this assessment.
+            </p>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}

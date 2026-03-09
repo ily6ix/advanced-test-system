@@ -10,6 +10,7 @@ import numpy as np
 import base64
 from io import BytesIO
 from PIL import Image
+import glob
 
 app = Flask(__name__)
 # secret key for session/flash messages; in production use an environment variable
@@ -41,6 +42,7 @@ def send_verification_email(email, code):
 
 DATA_DIR = 'data'
 VIOLATION_IMAGES_DIR = 'data/violation_images'
+AUDIO_RECORDINGS_DIR = 'data/audio_recordings'
 
 
 def ensure_data_dir():
@@ -48,6 +50,8 @@ def ensure_data_dir():
         os.makedirs(DATA_DIR)
     if not os.path.isdir(VIOLATION_IMAGES_DIR):
         os.makedirs(VIOLATION_IMAGES_DIR)
+    if not os.path.isdir(AUDIO_RECORDINGS_DIR):
+        os.makedirs(AUDIO_RECORDINGS_DIR)
 
 
 def _convert_datetimes(obj):
@@ -1228,6 +1232,26 @@ def take_assessment(assessment_id):
     result['submitted_date'] = datetime.now().isoformat()
     result['time_spent'] = int(request.form.get('time_spent', '0') or 0)
     
+    # Handle audio recording
+    audio_data = request.form.get('audio_data')
+    if audio_data:
+        # Remove the data URL prefix if present
+        if ',' in audio_data:
+            audio_data = audio_data.split(',')[1]
+        
+        try:
+            # Decode base64 audio data
+            audio_bytes = base64.b64decode(audio_data)
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            audio_filename = f"audio_{assessment_id}_{candidate_id}_{timestamp}.wav"
+            audio_path = os.path.join(AUDIO_RECORDINGS_DIR, audio_filename)
+            with open(audio_path, 'wb') as f:
+                f.write(audio_bytes)
+            
+            result['audio_recording'] = audio_filename
+        except Exception as e:
+            print(f"Error saving audio recording: {e}")
+    
     save_to_file('assessments.json', assessments)
     
     # Send notification to all admins when assessment is submitted
@@ -1317,6 +1341,36 @@ def grade_assessment(assessment_id, candidate_id):
                          result=result, 
                          candidate=candidate)
 
+
+@app.route('/admin/assessments/<int:assessment_id>/report/<int:candidate_id>')
+def view_full_report(assessment_id, candidate_id):
+    if not require_login('Administrator'):
+        return redirect(url_for('login'))
+    
+    assessment = next((a for a in assessments if a['id'] == assessment_id), None)
+    if not assessment:
+        flash('Assessment not found.', 'danger')
+        return redirect(url_for('admin_results'))
+    
+    result = next(
+        (r for r in assessment.get('results', []) if r['candidate_id'] == candidate_id),
+        None
+    )
+    if not result:
+        flash('Assessment result not found.', 'danger')
+        return redirect(url_for('admin_results'))
+    
+    candidate = next((u for u in users if u['id'] == candidate_id), None)
+    
+    # Get violation images for this assessment and candidate
+    violation_images = glob.glob(os.path.join(VIOLATION_IMAGES_DIR, f'violation_{assessment_id}_{candidate_id}_*.jpg'))
+    violation_images = [os.path.basename(img) for img in violation_images]
+    
+    return render_template('full_report.html', 
+                         assessment=assessment, 
+                         result=result, 
+                         candidate=candidate,
+                         violation_images=violation_images)
 
 
 # new endpoint for recording proctoring warnings
@@ -1516,6 +1570,15 @@ def violation_image(filename):
         return redirect(url_for('login'))
     
     return send_from_directory(VIOLATION_IMAGES_DIR, filename)
+
+
+@app.route('/admin/audio_recordings/<filename>')
+def audio_recording(filename):
+    """Serve audio recordings to admins"""
+    if not require_login('Administrator'):
+        return redirect(url_for('login'))
+    
+    return send_from_directory(AUDIO_RECORDINGS_DIR, filename)
 
 
 if __name__ == '__main__':

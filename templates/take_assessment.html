@@ -26,6 +26,26 @@
 
     <form method="post" id="assessment_form" style="background: white; padding: 2rem; border-radius: 10px; border: 1px solid #e0e0e0;">
         <input type="hidden" name="time_spent" id="time_spent" value="0">
+        <input type="hidden" name="audio_data" id="audio_data" value="">
+        
+        <!-- Audio Recording Section -->
+        <div style="background: #f0f8ff; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border: 2px solid #1f4ed8;">
+            <h4 style="margin: 0 0 1rem 0; color: #1f4ed8;">🎤 Audio Recording</h4>
+            <p style="margin: 0 0 1rem 0; color: #333;">
+                Please record your voice explaining your thought process for each question. This audio will be submitted with your assessment for review.
+            </p>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <button type="button" id="start-recording" class="btn btn-primary" style="padding: 0.75rem 1.5rem;">
+                    🎤 Start Recording
+                </button>
+                <button type="button" id="stop-recording" class="btn btn-danger" style="padding: 0.75rem 1.5rem; display: none;">
+                    ⏹️ Stop Recording
+                </button>
+                <audio id="audio-playback" controls style="flex: 1; display: none;"></audio>
+                <span id="recording-status" style="color: #666; font-style: italic;">Not recording</span>
+            </div>
+        </div>
+
         <!-- video element for face tracking, visible as small window if enabled -->
         {% if assessment.allow_face_tracking %}
         <video id="proctor_video" autoplay muted playsinline style="position: fixed; bottom: 10px; right: 10px; width: 150px; height: 100px; border: 2px solid #333; border-radius: 5px; z-index: 1000; object-fit: cover;"></video>
@@ -79,11 +99,11 @@
             <div style="background: #e8f5e9; padding: 2rem; border-radius: 10px; margin-top: 2rem; border: 2px solid #4caf50;">
                 <h4 style="margin-top: 0; color: #2e7d32;">✓ Ready to Submit?</h4>
                 <p style="margin: 0.5rem 0; color: #333;">
-                    Make sure you have answered all <strong>{{ assessment.questions|length }}</strong> questions. 
-                    After submission, you cannot modify your answers.
+                    Make sure you have answered all <strong>{{ assessment.questions|length }}</strong> questions and recorded your audio explanation. 
+                    After submission, you cannot modify your answers or recording.
                 </p>
                 <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
-                    <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.05rem;" onclick="return confirm('Are you sure? You will not be able to modify answers after submission.')">
+                    <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.05rem;" onclick="return validateAndSubmit()">
                         Submit Assessment
                     </button>
                 </div>
@@ -234,6 +254,84 @@
             updateTimer();
         }
     });
+
+    // ---------- audio recording ----------
+    let mediaRecorder;
+    let audioChunks = [];
+    let isRecording = false;
+
+    document.getElementById('start-recording').addEventListener('click', async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            
+            mediaRecorder.ondataavailable = (event) => {
+                audioChunks.push(event.data);
+            };
+            
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                document.getElementById('audio-playback').src = audioUrl;
+                document.getElementById('audio-playback').style.display = 'block';
+                
+                // Convert blob to base64 for form submission
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    document.getElementById('audio_data').value = reader.result;
+                };
+                reader.readAsDataURL(audioBlob);
+                
+                // Stop all tracks to release microphone
+                stream.getTracks().forEach(track => track.stop());
+            };
+            
+            mediaRecorder.start();
+            isRecording = true;
+            document.getElementById('start-recording').style.display = 'none';
+            document.getElementById('stop-recording').style.display = 'inline-block';
+            document.getElementById('recording-status').textContent = '🔴 Recording...';
+            
+        } catch (err) {
+            console.error('Audio recording failed:', err);
+            alert('Unable to access microphone for audio recording.');
+        }
+    });
+
+    document.getElementById('stop-recording').addEventListener('click', () => {
+        if (mediaRecorder && isRecording) {
+            mediaRecorder.stop();
+            isRecording = false;
+            document.getElementById('start-recording').style.display = 'inline-block';
+            document.getElementById('stop-recording').style.display = 'none';
+            document.getElementById('recording-status').textContent = 'Recording stopped';
+        }
+    });
+
+    function validateAndSubmit() {
+        // Check if all questions are answered
+        const totalQuestions = {{ assessment.questions|length }};
+        let answeredCount = 0;
+        document.querySelectorAll('.question_input').forEach(el => {
+            if (el.type === 'radio' && el.checked) answeredCount++;
+            else if (el.type === 'textarea' && el.value.trim()) answeredCount++;
+        });
+        
+        if (answeredCount < totalQuestions) {
+            alert(`Please answer all ${totalQuestions} questions before submitting.`);
+            return false;
+        }
+        
+        // Check if audio is recorded
+        const audioData = document.getElementById('audio_data').value;
+        if (!audioData) {
+            alert('Please record your audio explanation before submitting.');
+            return false;
+        }
+        
+        return confirm('Are you sure? You will not be able to modify answers or audio recording after submission.');
+    }
 
     // Prevent accidental page exit
     window.addEventListener('beforeunload', function(e) {
