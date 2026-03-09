@@ -261,21 +261,19 @@
     });
 
     // ---------- face tracking / proctoring ----------
-    let faceDetector;
     let video = document.getElementById('proctor_video');
     let violationCooldown = false;
+    let canvas = document.createElement('canvas');
+    let ctx = canvas.getContext('2d');
 
     async function startFaceTracking() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             video.srcObject = stream;
             await video.play();
-            if ('FaceDetector' in window) {
-                faceDetector = new window.FaceDetector({ fastMode: true, maxDetectedFaces: 1 });
-                checkFaceLoop();
-            } else {
-                console.warn('FaceDetector API not supported in this browser.');
-            }
+            
+            // Start server-side frame analysis
+            analyzeFramesLoop();
         } catch (err) {
             console.warn('Unable to access camera for proctoring:', err);
             alert('Camera access is required for this assessment. Your test will be cancelled.');
@@ -285,31 +283,46 @@
         }
     }
 
-    async function checkFaceLoop() {
+    async function analyzeFramesLoop() {
         if (violationCooldown || video.paused || video.ended) {
-            setTimeout(checkFaceLoop, 1000);
+            setTimeout(analyzeFramesLoop, 2000);
             return;
         }
+        
         try {
-            const faces = await faceDetector.detect(video);
-            let violation = false;
-            if (!faces || faces.length === 0) {
-                violation = true;
-            } else {
-                const face = faces[0].boundingBox;
-                const vw = video.videoWidth;
-                const vh = video.videoHeight;
-                const centerX = face.x + face.width / 2;
-                const centerY = face.y + face.height / 2;
-                if (centerX < vw * 0.25 || centerX > vw * 0.75 || centerY < vh * 0.25 || centerY > vh * 0.75) {
-                    violation = true;
+            // Capture frame
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+            const imageData = canvas.toDataURL('image/jpeg', 0.8);
+            
+            // Send to server for analysis
+            const resp = await fetch('{{ url_for("analyze_frame", assessment_id=assessment.id) }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: imageData })
+            });
+            
+            const data = await resp.json();
+            
+            if (data.error) {
+                console.error('Frame analysis error:', data.error);
+            } else if (data.violations && data.violations.length > 0) {
+                // Violation detected by server
+                violationCooldown = true;
+                if (data.cancelled) {
+                    alert('Your assessment has been cancelled due to repeated violations.');
+                    window.location.href = '{{ url_for("candidate_assessments") }}';
+                    return;
                 }
+                alert('Warning #' + data.count + ': ' + data.violations.join(', ').replace(/_/g, ' ') + '. Your total score will be reduced by 5%.');
+                setTimeout(() => { violationCooldown = false; }, 3000);
             }
-            if (violation) sendWarning();
         } catch (err) {
-            console.error('proctoring check failed', err);
+            console.error('Frame analysis failed', err);
         }
-        setTimeout(checkFaceLoop, 2000);
+        
+        setTimeout(analyzeFramesLoop, 3000); // Analyze every 3 seconds
     }
 
     async function sendWarning() {

@@ -5,6 +5,11 @@ import random
 import smtplib
 from email.mime.text import MIMEText
 from datetime import datetime
+import cv2
+import numpy as np
+import base64
+from io import BytesIO
+from PIL import Image
 
 app = Flask(__name__)
 # secret key for session/flash messages; in production use an environment variable
@@ -1349,6 +1354,21 @@ def record_warning(assessment_id):
     total_warnings = (result.get('face_warnings', 0) or 0) + (result.get('voice_warnings', 0) or 0)
     save_to_file('assessments.json', assessments)
 
+    # Notify admins of the violation
+    candidate = next((u for u in users if u['id'] == candidate_id), None)
+    candidate_name = candidate['get_full_name'] if candidate else f'Candidate #{candidate_id}'
+    admin_users = [u for u in users if u['role'] == 'Administrator']
+    
+    for admin in admin_users:
+        create_notification(
+            notification_type='proctoring_violation',
+            user_id=admin['id'],
+            title=f'Proctoring Violation: {assessment["title"]}',
+            message=f'{candidate_name} triggered a {reason} violation during assessment "{assessment["title"]}". Warning #{count} for this type.',
+            related_assessment_id=assessment_id,
+            related_candidate_id=candidate_id
+        )
+
     if total_warnings > 2:
         result['status'] = 'cancelled'
         result['cancelled'] = True
@@ -1356,6 +1376,117 @@ def record_warning(assessment_id):
         return json.dumps({'cancelled': True}), 200
 
     return json.dumps({'reason': reason, 'count': count, 'total': total_warnings}), 200
+
+
+@app.route('/api/analyze_frame/<int:assessment_id>', methods=['POST'])
+def analyze_frame(assessment_id):
+    """Analyze a video frame for cheating detection using computer vision."""
+    if not require_login('Candidate'):
+        return json.dumps({'error': 'not logged in'}), 403
+    
+    candidate_id = session.get('user_id')
+    assessment = next((a for a in assessments if a['id'] == assessment_id), None)
+    if not assessment:
+        return json.dumps({'error': 'assessment not found'}), 404
+    
+    result = next((r for r in assessment.get('results', []) if r['candidate_id'] == candidate_id), None)
+    if not result or result.get('status') != 'in_progress':
+        return json.dumps({'error': 'not in progress'}), 400
+
+    # Get the base64 image data
+    data = request.get_json()
+    if not data or 'image' not in data:
+        return json.dumps({'error': 'no image provided'}), 400
+    
+    image_data = data['image']
+    # Remove the data URL prefix if present
+    if ',' in image_data:
+        image_data = image_data.split(',')[1]
+    
+    try:
+        # Decode base64 image
+        image_bytes = base64.b64decode(image_data)
+        image = Image.open(BytesIO(image_bytes))
+        # Convert to OpenCV format
+        opencv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+        
+        # Load face cascade classifier
+        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        
+        # Convert to grayscale for face detection
+        gray = cv2.cvtColor(opencv_image, cv2.COLOR_BGR2GRAY)
+        
+        # Detect faces
+        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+        
+        violations = []
+        
+        # Check for multiple faces (potential cheating)
+        if len(faces) > 1:
+            violations.append('multiple_faces')
+        
+        # Check if no face detected
+        elif len(faces) == 0:
+            violations.append('no_face')
+        
+        # If exactly one face, check if it's centered
+        elif len(faces) == 1:
+            face = faces[0]
+            h, w = opencv_image.shape[:2]
+            face_center_x = face[0] + face[2] / 2
+            face_center_y = face[1] + face[3] / 2
+            
+            # Check if face is in center region (roughly 40% of screen)
+            center_region_left = w * 0.3
+            center_region_right = w * 0.7
+            center_region_top = h * 0.3
+            center_region_bottom = h * 0.7
+            
+            if not (center_region_left <= face_center_x <= center_region_right and 
+                    center_region_top <= face_center_y <= center_region_bottom):
+                violations.append('face_not_centered')
+        
+        # If violations detected, record warning
+        if violations:
+            # Use the first violation as the reason
+            reason = violations[0]
+            
+            # Increment face warnings (since this is vision-based)
+            result['face_warnings'] = result.get('face_warnings', 0) + 1
+            count = result['face_warnings']
+            
+            total_warnings = (result.get('face_warnings', 0) or 0) + (result.get('voice_warnings', 0) or 0)
+            save_to_file('assessments.json', assessments)
+            
+            # Notify admins
+            candidate = next((u for u in users if u['id'] == candidate_id), None)
+            candidate_name = candidate['get_full_name'] if candidate else f'Candidate #{candidate_id}'
+            admin_users = [u for u in users if u['role'] == 'Administrator']
+            
+            for admin in admin_users:
+                create_notification(
+                    notification_type='proctoring_violation',
+                    user_id=admin['id'],
+                    title=f'Computer Vision Alert: {assessment["title"]}',
+                    message=f'{candidate_name} detected with {reason.replace("_", " ")} during assessment "{assessment["title"]}". Warning #{count}.',
+                    related_assessment_id=assessment_id,
+                    related_candidate_id=candidate_id
+                )
+            
+            # Check if assessment should be cancelled
+            if total_warnings > 2:
+                result['status'] = 'cancelled'
+                result['cancelled'] = True
+                save_to_file('assessments.json', assessments)
+                return json.dumps({'violations': violations, 'cancelled': True, 'count': count}), 200
+            
+            return json.dumps({'violations': violations, 'count': count, 'total': total_warnings}), 200
+        
+        return json.dumps({'violations': []}), 200
+        
+    except Exception as e:
+        print(f"Error processing frame: {e}")
+        return json.dumps({'error': 'processing failed'}), 500
 
 
 # prevent browsers from caching sensitive pages so that hitting the back
