@@ -163,5 +163,104 @@
     "read": false,
     "related_assessment_id": 6,
     "related_candidate_id": 3
+  },
+  {
+    "id": 16,
+    "type": "assessment_assigned",
+    "user_id": 3,
+    "title": "New Assessment Assigned: practice 2",
+    "message": "You have been assigned a new assessment: \"practice 2\". Please review it in your dashboard.",
+    "created_at": "2026-03-09T12:40:34.140448",
+    "read": false,
+    "related_assessment_id": 7,
+    "related_candidate_id": null
+  },
+  {
+    "id": 17,
+    "type": "assessment_assigned",
+    "user_id": 4,
+    "title": "New Assessment Assigned: practice 2",
+    "message": "You have been assigned a new assessment: \"practice 2\". Please review it in your dashboard.",
+    "created_at": "2026-03-09T12:40:34.141014",
+    "read": false,
+    "related_assessment_id": 7,
+    "related_candidate_id": null
+  },
+  {
+    "id": 18,
+    "type": "assessment_assigned",
+    "user_id": 5,
+    "title": "New Assessment Assigned: practice 2",
+    "message": "You have been assigned a new assessment: \"practice 2\". Please review it in your dashboard.",
+    "created_at": "2026-03-09T12:40:34.141457",
+    "read": false,
+    "related_assessment_id": 7,
+    "related_candidate_id": null
+  },
+  {
+    "id": 19,
+    "type": "proctoring_violation",
+    "user_id": 1,
+    "title": "Computer Vision Alert: practice 2",
+    "message": "james detected with no face during assessment \"practice 2\". Warning #1. Proof image: <a href=\"/admin/violation_images/violation_7_3_20260309_124135.jpg\" target=\"_blank\">View Image</a>",
+    "created_at": "2026-03-09T12:41:35.650060",
+    "read": false,
+    "related_assessment_id": 7,
+    "related_candidate_id": 3
+  },
+  {
+    "id": 20,
+    "type": "proctoring_violation",
+    "user_id": 1,
+    "title": "Computer Vision Alert: practice 2",
+    "message": "james detected with no face during assessment \"practice 2\". Warning #2. Proof image: <a href=\"/admin/violation_images/violation_7_3_20260309_124142.jpg\" target=\"_blank\">View Image</a>",
+    "created_at": "2026-03-09T12:41:42.333637",
+    "read": false,
+    "related_assessment_id": 7,
+    "related_candidate_id": 3
+  },
+  {
+    "id": 21,
+    "type": "proctoring_violation",
+    "user_id": 1,
+    "title": "Proctoring Violation: practice 2",
+    "message": "james triggered a voice violation during assessment \"practice 2\". Warning #1 for this type.",
+    "created_at": "2026-03-09T12:41:52.926389",
+    "read": false,
+    "related_assessment_id": 7,
+    "related_candidate_id": 3
+  },
+  {
+    "id": 22,
+    "type": "proctoring_violation",
+    "user_id": 1,
+    "title": "Computer Vision Alert: practice 2",
+    "message": "goitseone detected with no face during assessment \"practice 2\". Warning #1. Proof image: <a href=\"/admin/violation_images/violation_7_4_20260309_124225.jpg\" target=\"_blank\">View Image</a>",
+    "created_at": "2026-03-09T12:42:25.498075",
+    "read": false,
+    "related_assessment_id": 7,
+    "related_candidate_id": 4
+  },
+  {
+    "id": 23,
+    "type": "assessment_submitted",
+    "user_id": 1,
+    "title": "Assessment Submitted: practice 2",
+    "message": "goitseone has submitted the assessment \"practice 2\" and is waiting for grading.",
+    "created_at": "2026-03-09T12:42:35.163779",
+    "read": false,
+    "related_assessment_id": 7,
+    "related_candidate_id": 4
+  },
+  {
+    "id": 24,
+    "type": "assessment_graded",
+    "user_id": 4,
+    "title": "Assessment Graded: practice 2",
+    "message": "Your assessment \"practice 2\" has been graded. Score: 95%. Status: Passed.",
+    "created_at": "2026-03-09T12:43:37.066829",
+    "read": false,
+    "related_assessment_id": 7,
+    "related_candidate_id": null
   }
 ]
